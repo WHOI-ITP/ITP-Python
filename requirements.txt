@@ -1,0 +1,6 @@
+numpy
+PyQt5
+h5py
+pytest
+pytest-cov
+pytest-mock
