@@ -1,20 +1,15 @@
-def itp_metadata():
-    return {
-        'system_number': None,
-        'profile_number': None,
-        'file_name': None,
-        'date_time': None,
-        'latitude': None,
-        'longitude': None,
-        'n_depths': None
-    }
+
+REQUIRED_SENSORS = ['pressure', 'temperature', 'salinity', 'nobs']
+SENSOR_PRECISION = {'pressure': 1,
+                    'temperature': 4,
+                    'salinity': 4}
 
 
 class Itp:
     def __init__(self, metadata, sensors):
+        assert set(REQUIRED_SENSORS).issubset(sensors)
         self.metadata = metadata
         self.sensors = sensors
-        assert {'pressure', 'temperature', 'salinity'}.issubset(self.sensors)
 
     @property
     def latitude(self):
@@ -48,9 +43,6 @@ class Itp:
         return self.sensors.keys()
 
     def data(self, sensor):
-        return self.sensors[sensor]
-
-
-class ItpCollection:
-    def __init__(self):
-        pass
+        scale = SENSOR_PRECISION.get(sensor, 0)
+        return [None if x is None else x/(10**scale)
+                for x in self.sensors[sensor]]
