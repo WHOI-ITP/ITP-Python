@@ -1,48 +1,27 @@
-
-REQUIRED_SENSORS = ['pressure', 'temperature', 'salinity', 'nobs']
-SENSOR_PRECISION = {'pressure': 1,
-                    'temperature': 4,
-                    'salinity': 4}
+REQUIRED_VARIABLES = ['pressure', 'temperature', 'salinity', 'nobs']
+REQUIRED_METADATA = ['latitude', 'longitude', 'date_time', 'system_number',
+                     'profile_number', 'file_name', 'n_depths']
 
 
-class Itp:
-    def __init__(self, metadata, sensors):
-        assert set(REQUIRED_SENSORS).issubset(sensors)
-        self.metadata = metadata
-        self.sensors = sensors
+class ItpProfile:
+    def __init__(self, metadata, variables):
+        assert set(REQUIRED_VARIABLES).issubset(variables)
+        assert set(REQUIRED_METADATA).issubset(metadata)
+        self._metadata = metadata
+        self._variables = variables
 
-    @property
-    def latitude(self):
-        return self.metadata['latitude']
+    def metadata(self, field):
+        return self._metadata[field]
 
-    @property
-    def longitude(self):
-        return self.metadata['longitude']
+    def variables(self):
+        return list(self._variables.keys())
 
-    @property
-    def date_time(self):
-        return self.metadata['date_time']
+    def data(self, field):
+        return self._variables[field]
 
-    @property
-    def system_number(self):
-        return self.metadata['system_number']
-
-    @property
-    def profile_number(self):
-        return self.metadata['profile_number']
-
-    @property
-    def file_name(self):
-        return self.metadata['file_name']
-
-    @property
-    def n_depths(self):
-        return self.metadata['n_depths']
-
-    def active_sensors(self):
-        return self.sensors.keys()
-
-    def data(self, sensor):
-        scale = SENSOR_PRECISION.get(sensor, 0)
-        return [None if x is None else x/(10**scale)
-                for x in self.sensors[sensor]]
+    def scaled_data(self, field):
+        """
+        This is used to read data before writing to the database.
+        """
+        return [None if x is None else int(x * 10000)
+                for x in self.data(field)]

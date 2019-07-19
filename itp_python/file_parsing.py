@@ -1,5 +1,5 @@
 from itp_python.utils import julian_to_iso8601
-from itp_python.itp import Itp, SENSOR_PRECISION
+from itp_python.itp import ItpProfile
 from pathlib import Path
 import re
 
@@ -7,26 +7,25 @@ import re
 def parse_itp_final(path):
     with open(path) as datafile:
         header = [datafile.readline(),
-                  datafile.readline(),
                   datafile.readline()]
-        metadata, sensor_names = _parse_header(header)
+        metadata = _parse_header(header)
+        variables = _get_variables(datafile.readline())
+        metadata['variables'] = variables
         metadata['file_name'] = Path(path).name
-        sensors = _init_data_dict(sensor_names)
+        variables = _init_data_dict(variables)
         for row in datafile:
             if row.startswith('%'):
                 continue
             values = row.split()
             values = [None if v == 'NaN' else float(v) for v in values]
-            for i, field in enumerate(sensor_names):
-                scale = SENSOR_PRECISION.get(field, 0)
-                data = None if values[i] is None else int(values[i] * 10 ** scale)
-                sensors[field].append(data)
-    return metadata, sensors
+            for i, field in enumerate(variables):
+                variables[field].append(values[i])
+    return ItpProfile(metadata, variables)
 
 
 def _parse_header(header):
-    header_re = re.search('%ITP ([0-9]+).*profile ([0-9]+)', header[0])
-    metadata = {}
+    header_re = re.search(r'%ITP ([0-9]+).*profile ([0-9]+)', header[0])
+    metadata = dict()
     metadata['system_number'] = int(header_re.group(1))
     metadata['profile_number'] = int(header_re.group(2))
     date_and_pos = header[1].split()
@@ -36,12 +35,18 @@ def _parse_header(header):
     metadata['latitude'] = float(date_and_pos[3])
     metadata['n_depths'] = int(date_and_pos[4])
     # remove left paren "(" and everything after
-    sensor_names = re.sub('%|(\(\S*)*', '', header[2])
-    return metadata, sensor_names.split()
+    return metadata
+
+
+def _get_variables(header):
+    # remove percent sign, parenthesis (with contents), and x10^4
+    sensor_names = re.sub(r'%|x10\^4|\([^)]*\)', '', header)
+    sensor_names = sensor_names.lower()
+    return sensor_names.split()
 
 
 def _init_data_dict(sensor_names):
-    sensors = dict.fromkeys(sensor_names)
-    for sensor in sensors.keys():
-        sensors[sensor] = list()
-    return sensors
+    variables = dict.fromkeys(sensor_names)
+    for sensor in variables.keys():
+        variables[sensor] = list()
+    return variables
