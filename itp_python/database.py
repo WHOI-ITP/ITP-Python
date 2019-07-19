@@ -44,9 +44,9 @@ def setup_db(path):
 
     c.execute(
         ''' 
-        CREATE TABLE other_sensors (
+        CREATE TABLE other_variables (
             ctd_id INTEGER,
-            sensor_id INTEGER, 
+            variable_id INTEGER, 
             value REAL
         )
         '''
@@ -54,23 +54,25 @@ def setup_db(path):
 
     c.execute(
         ''' 
-        CREATE TABLE sensor_names (
+        CREATE TABLE variables (
             id INTEGER PRIMARY KEY,
-            name TEXT UNIQUE
+            name TEXT UNIQUE,
+            precision INT,
+            units TEXT
         )
         '''
     )
 
     c.execute(
-        ''' 
+        '''
         CREATE INDEX idx_profile_id ON ctd(profile_id)
         '''
     )
 
     c.execute(
-        ''' 
-        CREATE INDEX idx_sensor_name_pid 
-        ON other_sensors(ctd_id)
+        '''
+        CREATE INDEX idx_variable_name_pid
+        ON other_variables(ctd_id)
         '''
     )
 
@@ -78,28 +80,30 @@ def setup_db(path):
     connection.close()
 
 
-def write_to_db(path, metadata, sensors):
+def write_to_db(path, itp_profile):
     connection = sqlite3.connect(path)
     c = connection.cursor()
     c.execute('INSERT INTO profiles VALUES (?,?,?,?,?,?,?,?)', (
         None,
-        metadata['system_number'],
-        metadata['profile_number'],
-        metadata['file_name'],
-        metadata['date_time'],
-        metadata['latitude'],
-        metadata['longitude'],
-        metadata['n_depths'])
+        itp_profile.metadata('system_number'),
+        itp_profile.metadata('profile_number'),
+        itp_profile.metadata('file_name'),
+        itp_profile.metadata('date_time'),
+        itp_profile.metadata('latitude'),
+        itp_profile.metadata('longitude'),
+        itp_profile.metadata('n_depths'))
     )
     rowid = c.lastrowid
-    for i in range(metadata['n_depths']):
+    variables = ['pressure', 'temperature', 'salinity', 'nobs']
+    scaled_values = {v: itp_profile.scaled_data(v) for v in variables}
+    for i in range(itp_profile.metadata('n_depths')):
         c.execute('INSERT INTO ctd VALUES (?,?,?,?,?,?)', (
             None,
             rowid,
-            sensors['pressure'][i],
-            sensors['temperature'][i],
-            sensors['salinity'][i],
-            sensors['nobs'][i])
+            scaled_values['pressure'][i],
+            scaled_values['temperature'][i],
+            scaled_values['salinity'][i],
+            scaled_values['nobs'][i])
         )
 
     # other_sensors = set(itp.active_sensors()) - set(REQUIRED_SENSORS)
@@ -126,11 +130,11 @@ def write_to_db(path, metadata, sensors):
 
 if __name__ == '__main__':
     setup_db('itp.db')
-    PATH = 'E:/ITP Data/final/'
-    # PATH = 'E:/ITP Data/final/itp48final/'
+    # PATH = 'E:/ITP Data/final/'
+    PATH = 'E:/ITP Data/final/itp48final/'
     # PATH = 'E:/ITP Data/final/itp1final/'
     files = list(Path(PATH).glob('**/itp*grd*.dat'))
     for file_path in files:
         print(file_path)
-        metadata, sensors = parse_itp_final(file_path)
-        write_to_db('itp.db', metadata, sensors)
+        itp_profile = parse_itp_final(file_path)
+        write_to_db('itp.db', itp_profile)
