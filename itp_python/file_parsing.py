@@ -41,6 +41,7 @@ def _parse_header(header):
 def _get_variables(header):
     # remove percent sign, parenthesis (with contents), and x10^4
     sensor_names = re.sub(r'%|x10\^4|\([^)]*\)', '', header)
+    sensor_names = re.sub(r'-', '_', sensor_names)
     sensor_names = sensor_names.lower()
     return sensor_names.split()
 
