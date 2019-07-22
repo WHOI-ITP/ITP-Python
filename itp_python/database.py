@@ -1,8 +1,10 @@
 import sqlite3
 from pathlib import Path
 from itp_python.file_parsing import parse_itp_final
+from itp_python.itp import REQUIRED_VARIABLES
 import os
-
+import time
+from datetime import datetime
 
 """
 This module will build an SQLite database from itp_final profiles.
@@ -11,7 +13,10 @@ Unzip the itpXfinal.zip folders, and point PATH to the containing folder
 
 
 def setup_db(path):
-    os.remove('itp.db')
+    try:
+        os.remove(path)
+    except FileNotFoundError:
+        pass
     connection = sqlite3.connect(path)
     c = connection.cursor()
     c.execute(
@@ -33,11 +38,11 @@ def setup_db(path):
         ''' 
         CREATE TABLE ctd (
             id INTEGER PRIMARY KEY,
-            profile_id INT,
-            pressure INT, 
-            temperature INT, 
-            salinity INT,
-            nobs INT
+            profile_id INTEGER,
+            pressure INTEGER, 
+            temperature INTEGER, 
+            salinity INTEGER,
+            nobs INTEGER
         )
         '''
     )
@@ -47,18 +52,16 @@ def setup_db(path):
         CREATE TABLE other_variables (
             ctd_id INTEGER,
             variable_id INTEGER, 
-            value REAL
+            value INTEGER
         )
         '''
     )
 
     c.execute(
         ''' 
-        CREATE TABLE variables (
+        CREATE TABLE variable_names (
             id INTEGER PRIMARY KEY,
-            name TEXT UNIQUE,
-            precision INT,
-            units TEXT
+            name TEXT UNIQUE
         )
         '''
     )
@@ -80,9 +83,7 @@ def setup_db(path):
     connection.close()
 
 
-def write_to_db(path, itp_profile):
-    connection = sqlite3.connect(path)
-    c = connection.cursor()
+def write_to_db(c, itp_profile):
     c.execute('INSERT INTO profiles VALUES (?,?,?,?,?,?,?,?)', (
         None,
         itp_profile.metadata('system_number'),
@@ -94,8 +95,7 @@ def write_to_db(path, itp_profile):
         itp_profile.metadata('n_depths'))
     )
     rowid = c.lastrowid
-    variables = ['pressure', 'temperature', 'salinity', 'nobs']
-    scaled_values = {v: itp_profile.scaled_data(v) for v in variables}
+    scaled_values = {v: itp_profile.scaled_data(v) for v in REQUIRED_VARIABLES}
     for i in range(itp_profile.metadata('n_depths')):
         c.execute('INSERT INTO ctd VALUES (?,?,?,?,?,?)', (
             None,
@@ -106,35 +106,40 @@ def write_to_db(path, itp_profile):
             scaled_values['nobs'][i])
         )
 
-    # other_sensors = set(itp.active_sensors()) - set(REQUIRED_SENSORS)
-    # if other_sensors:
-    #     ctd_id = c.execute('SELECT id FROM ctd '
-    #                        'WHERE profile_id = ? '
-    #                        'ORDER BY id', (rowid,)).fetchall()
-    #     for sensor in other_sensors:
-    #         assert len(ctd_id) == len(itp.data(sensor))
-    #         c.execute('INSERT OR IGNORE INTO sensor_names VALUES (?,?)',
-    #                   (None,sensor))
-    #         sensor_id = c.execute('SELECT id FROM sensor_names WHERE name=?',
-    #                               (sensor,)).fetchone()
-    #         for i, value in enumerate(itp.data(sensor)):
-    #             if value is None:
-    #                 continue
-    #             sql = 'INSERT INTO other_sensors VALUES ' \
-    #                   '(?, ?, ?)'
-    #             c.execute(sql, (ctd_id[i][0], sensor_id[0], value))
-
-    connection.commit()
-    connection.close()
+    other_variables = set(itp_profile.variables()) - set(REQUIRED_VARIABLES)
+    if other_variables:
+        ctd_id = c.execute('SELECT id FROM ctd '
+                           'WHERE profile_id = ? '
+                           'ORDER BY id', (rowid,)).fetchall()
+        for variable in other_variables:
+            assert len(ctd_id) == len(itp_profile.data(variable))
+            c.execute('INSERT OR IGNORE INTO variable_names VALUES (?,?)',
+                      (None, variable))
+            sensor_id = c.execute('SELECT id FROM variable_names WHERE name=?',
+                                  (variable,)).fetchone()
+            for i, value in enumerate(itp_profile.scaled_data(variable)):
+                if value is None:
+                    continue
+                c.execute('INSERT INTO other_variables VALUES (?, ?, ?)',
+                          (ctd_id[i][0], sensor_id[0], value))
 
 
 if __name__ == '__main__':
-    setup_db('itp.db')
-    # PATH = 'E:/ITP Data/final/'
-    PATH = 'E:/ITP Data/final/itp48final/'
-    # PATH = 'E:/ITP Data/final/itp1final/'
+    stime = time.time()
+    db_filename = 'itp_' + datetime.now().strftime('%Y_%m_%d') + '.db'
+    setup_db(db_filename)
+    PATH = 'E:/ITP Data/final/itp24final/'
     files = list(Path(PATH).glob('**/itp*grd*.dat'))
-    for file_path in files:
+    connection = sqlite3.connect(db_filename)
+    cursor = connection.cursor()
+    for i, file_path in enumerate(files):
         print(file_path)
-        itp_profile = parse_itp_final(file_path)
-        write_to_db('itp.db', itp_profile)
+        this_profile = parse_itp_final(file_path)
+        write_to_db(cursor, this_profile)
+        if i % 1000 == 0:
+            connection.commit()
+    connection.commit()
+    connection.close()
+    etime = time.time()
+    print('Database built in {:0.1f} seconds'.format(etime-stime))
+
