@@ -55,5 +55,6 @@ def download_itp_files(destination):
     else:
         print('All files up to date')
 
+
 if __name__ == '__main__':
     download_itp_files(Path() / 'files')
