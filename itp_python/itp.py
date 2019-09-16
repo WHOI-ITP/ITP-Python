@@ -1,6 +1,6 @@
-REQUIRED_VARIABLES = ['pressure', 'temperature', 'salinity', 'nobs']
+REQUIRED_VARIABLES = ['pressure', 'temperature', 'salinity']
 REQUIRED_METADATA = ['latitude', 'longitude', 'date_time', 'system_number',
-                     'profile_number', 'file_name', 'n_depths']
+                     'profile_number', 'source']
 
 
 class ItpProfile:
