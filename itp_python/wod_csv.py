@@ -6,7 +6,7 @@ import logging
 
 logging.basicConfig(format='%(asctime)s %(message)s',
                     datefmt='%Y/%m/%dT%I:%M:%S',
-                    filename='example.log',
+                    filename='wod_csv.log',
                     filemode='w',
                     level=logging.DEBUG)
 
@@ -46,6 +46,16 @@ class WODCollection:
 
 
 class WODParser:
+    NAME_COL = 0
+    DATA_COL = 2
+    METADATA_FIELDS = [
+        ('CAST',  'profile_number', int),
+        ('Latitude', 'latitude', float),
+        ('Longitude', 'longitude', float),
+        ('NODC Cruise ID', 'system_number', str)
+    ]
+    TIME_FIELDS = ['Year', 'Month', 'Day', 'Time']
+
     def __init__(self, data):
         self.data = [[x.strip() for x in line.split(',')] for line in data]
         self.metadata = dict()
@@ -60,12 +70,25 @@ class WODParser:
         return ItpProfile(self.metadata, self.variables)
 
     def parse_header(self):
-        m = self.metadata
-        header = self.data[:self._find_tag('VARIABLES', self.data)]
-        m['date_time'] = self._parse_time(header)
-        m['latitude'], m['longitude'] = self._parse_lat_lon(header)
-        m['profile_number'] = self._header_vals('CAST', header)[0]
-        m['system_number'] = self._header_vals('NODC Cruise ID', header)[0]
+        header = self._header()
+        for wod_name, metadata_name, _type in self.METADATA_FIELDS:
+            self.metadata[metadata_name] = _type(header[wod_name])
+        self.metadata['date_time'] = self._parse_time(header)
+
+    def _header(self):
+        header_vals = {}
+        header = self.data[:self._find_tag('METADATA', self.data)]
+        for line in header:
+            header_vals[line[self.NAME_COL]] = line[self.DATA_COL]
+        return header_vals
+
+    def _parse_time(self, header):
+        field_names = ['Year', 'Month', 'Day']
+        time_vals = [int(header[field]) for field in field_names]
+        date_time = datetime(*time_vals)
+        # not all profiles have a Time field
+        hours = timedelta(hours=float(header.get('Time', 0)))
+        return datetime.strftime(date_time+hours, '%Y-%m-%dT%H:%M:%S')
 
     def read_data(self):
         var_names = [
@@ -89,30 +112,7 @@ class WODParser:
 
                 self.variables[variable].append(value)
 
-    def _parse_time(self, header):
-        field_names = ['Year', 'Month', 'Day', 'Time']
-        time_vals = self._header_vals(field_names, header)
-        ymd = [int(x) for x in time_vals[:3]]
-        date_time = datetime(*ymd)
-        hours = timedelta(hours=float(time_vals[3] or 1))
-        return datetime.strftime(date_time+hours, '%Y-%m-%dT%H:%M:%S')
-
-    def _parse_lat_lon(self, header):
-        lat_lon_vals = self._header_vals(['Latitude', 'Longitude'], header)
-        return [float(x) for x in lat_lon_vals]
-
-    def _header_vals(self, tags, header):
-        vals = []
-        tags = [tags] if type(tags) == str else tags
-        for tag in tags:
-            ind = self._find_tag(tag, header)
-            if ind is not None:
-                vals.append(header[ind][2])
-            else:
-                vals.append(None)
-        return vals
-
     def _find_tag(self, tag, data):
         for i, line in enumerate(data):
-            if line[0] == tag:
+            if line[self.NAME_COL] == tag:
                 return i
