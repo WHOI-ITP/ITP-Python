@@ -1,4 +1,4 @@
-from itp_python.file_parsing import parse_itp_final
+from itp_python.itp_final import parse_itp_final
 import os
 import pytest
 
@@ -15,13 +15,12 @@ def small_data_file():
 
 def test_read_metadata(small_data_file):
     expected_metadata = {
-        'file_name': 'itp1grd0001.dat',
+        'source': 'itp1grd0001.dat',
         'system_number': 1,
         'profile_number': 1,
         'date_time': '2005-08-16T06:00:00',
         'latitude': 78.8267,
         'longitude': -150.1313,
-        'n_depths': 7,
         'variables': ['pressure', 'temperature', 'salinity', 'nobs']}
 
     for key in expected_metadata:
