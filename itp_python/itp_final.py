@@ -4,6 +4,16 @@ from pathlib import Path
 import re
 
 
+class ITPFinalCollection:
+    def __init__(self, parent_directory):
+        self.parent_dir = parent_directory
+        self.paths = list(Path(self.parent_dir).glob('**/itp*grd*.dat'))
+
+    def __iter__(self):
+        for path in self.paths:
+            yield parse_itp_final(path)
+
+
 def parse_itp_final(path):
     with open(path) as datafile:
         header = [datafile.readline(),
@@ -11,7 +21,7 @@ def parse_itp_final(path):
         metadata = _parse_header(header)
         variables = _get_variables(datafile.readline())
         metadata['variables'] = variables
-        metadata['file_name'] = Path(path).name
+        metadata['source'] = Path(path).name
         variables = _init_data_dict(variables)
         for row in datafile:
             if row.startswith('%'):
@@ -33,7 +43,6 @@ def _parse_header(header):
     metadata['date_time'] = julian_to_iso8601(*year_day)
     metadata['longitude'] = float(date_and_pos[2])
     metadata['latitude'] = float(date_and_pos[3])
-    metadata['n_depths'] = int(date_and_pos[4])
     # remove left paren "(" and everything after
     return metadata
 
