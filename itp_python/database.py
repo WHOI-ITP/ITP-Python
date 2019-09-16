@@ -1,6 +1,5 @@
 import sqlite3
 from pathlib import Path
-from itp_python.itp_final import parse_itp_final
 from itp_python.itp import REQUIRED_VARIABLES
 import os
 import time

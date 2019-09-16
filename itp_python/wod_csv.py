@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from itp_python.itp import ItpProfile
 from pathlib import Path
+from itp_python.ctd_parser import CTDParser
 import logging
 
 
@@ -14,9 +15,13 @@ MISSING_VALUE = '---0---'
 
 
 class WODCollection:
-    def __init__(self, parent_directory):
-        self.parent_directory = parent_directory
-        self.paths = list(Path(parent_directory).glob('**/*.CTD*.csv'))
+    def __init__(self, paths):
+        self.paths = paths
+
+    @classmethod
+    def glob(cls, parent_directory):
+        paths = list(Path(parent_directory).glob('**/*.CTD*.csv'))
+        return cls(paths)
 
     def next(self, f):
         data = []
@@ -38,16 +43,17 @@ class WODCollection:
                     if not data:
                         break
                     try:
-                        yield WODParser(data).parse()
+                        return WODParser(data, 'WOD data').parse()
                     except ValueError:
-                        yield None
+                        return None
                     except TypeError:
                         logging.exception('Exception caught during parsing')
 
 
-class WODParser:
+class WODParser(CTDParser):
     NAME_COL = 0
     DATA_COL = 2
+    # (name in Wod File, name in itp db, data type)
     METADATA_FIELDS = [
         ('CAST',  'profile_number', int),
         ('Latitude', 'latitude', float),
@@ -56,39 +62,16 @@ class WODParser:
     ]
     TIME_FIELDS = ['Year', 'Month', 'Day', 'Time']
 
-    def __init__(self, data):
-        self.data = [[x.strip() for x in line.split(',')] for line in data]
-        self.metadata = dict()
-        self.metadata['source'] = 'WOD data'
-        self.variables = {'temperature': list(),
-                          'pressure': list(),
-                          'salinity': list()}
-
-    def parse(self):
-        self.parse_header()
-        self.read_data()
-        return ItpProfile(self.metadata, self.variables)
+    def __init__(self, data, source):
+        super().__init__(data, source)
+        self.data = [[value.strip() for value in line.split(',')]
+                     for line in data]
 
     def parse_header(self):
         header = self._header()
         for wod_name, metadata_name, _type in self.METADATA_FIELDS:
             self.metadata[metadata_name] = _type(header[wod_name])
         self.metadata['date_time'] = self._parse_time(header)
-
-    def _header(self):
-        header_vals = {}
-        header = self.data[:self._find_tag('METADATA', self.data)]
-        for line in header:
-            header_vals[line[self.NAME_COL]] = line[self.DATA_COL]
-        return header_vals
-
-    def _parse_time(self, header):
-        field_names = ['Year', 'Month', 'Day']
-        time_vals = [int(header[field]) for field in field_names]
-        date_time = datetime(*time_vals)
-        # not all profiles have a Time field
-        hours = timedelta(hours=float(header.get('Time', 0)))
-        return datetime.strftime(date_time+hours, '%Y-%m-%dT%H:%M:%S')
 
     def read_data(self):
         var_names = [
@@ -109,8 +92,22 @@ class WODParser:
                     logging.exception('Exception while converting {} to '
                                       'float'.format(value))
                     value = None
-
                 self.variables[variable].append(value)
+
+    def _header(self):
+        header_vals = {}
+        header = self.data[:self._find_tag('METADATA', self.data)]
+        for line in header:
+            header_vals[line[self.NAME_COL]] = line[self.DATA_COL]
+        return header_vals
+
+    def _parse_time(self, header):
+        field_names = ['Year', 'Month', 'Day']
+        time_vals = [int(header[field]) for field in field_names]
+        date_time = datetime(*time_vals)
+        # not all profiles have a Time field
+        hours = timedelta(hours=float(header.get('Time', 0)))
+        return datetime.strftime(date_time+hours, '%Y-%m-%dT%H:%M:%S')
 
     def _find_tag(self, tag, data):
         for i, line in enumerate(data):
