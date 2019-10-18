@@ -13,13 +13,12 @@ def to_string(array):
 
 
 class CormatCollection(Iterable):
-    def __init__(self, directory, pattern='**/cor*.mat', filt=None):
+    def __init__(self, directory, pattern='**/cor*.mat'):
         self.files = Path(directory).glob(pattern)
-        self.filt = filt
 
     def __iter__(self):
         for file_path in self.files:
-            file = CormatParser(file_path, self.filt).parse()
+            file = CormatParser(file_path).parse()
             if file:
                 yield file
 
@@ -28,9 +27,8 @@ class CormatParser:
     REQUIRED = {'latitude', 'longitude', 'itpno', 'psdate', 'pstart',
                 'pr_filt', 'te_cor', 'sa_adj'}
 
-    def __init__(self, path, filt):
+    def __init__(self, path):
         self.path = Path(path)
-        self.filt = filt
         self.metadata = {}
         self.variables = {}
         self.filename_re = re.compile(r'cor([0-9]+).mat')
@@ -41,10 +39,9 @@ class CormatParser:
                 if not self.check_required_dsets(file):
                     return
                 self.parse_metadata(file)
-                if not in_filter(self.metadata, self.filt):
-                    return
                 self.parse_data(file)
-                return ItpProfile(self.metadata, self.variables)
+                if len(self.variables['pressure']) != 0:
+                    return ItpProfile(self.metadata, self.variables)
         except OSError:
             pass
 
@@ -84,19 +81,3 @@ class CormatParser:
 
     def make_list(self, data):
         return [x for x in data]
-
-
-def in_filter(metadata, filt=None):
-    status = True
-    filt = filt or {}
-    lat_range = filt.get('latitude', None)
-    lon_range = filt.get('longitude', None)
-    if lat_range:
-        is_lat = lat_range[0] <= metadata['latitude'] < lat_range[1]
-        status = status and is_lat
-    if lon_range:
-        op = operator.or_ if lon_range[1] < lon_range[0] else operator.and_
-        is_lon = op(metadata['longitude'] > lon_range[0],
-                    metadata['longitude'] < lon_range[1])
-        status = status and is_lon
-    return status
