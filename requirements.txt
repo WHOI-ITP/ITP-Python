@@ -1,8 +1,8 @@
+ftputil
+h5py
 numpy
 PyQt5
-h5py
 pytest
 pytest-cov
 pytest-mock
-ftputil
 -e ../ITP-Python
