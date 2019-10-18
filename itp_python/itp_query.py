@@ -1,6 +1,7 @@
 import sqlite3
 import numpy as np
 from pathlib import Path
+from collections import namedtuple
 
 
 class Profile:
@@ -17,27 +18,19 @@ class ItpQuery:
     def __init__(self, db_path, **kwargs):
         self.db_path = Path(db_path)
         self.params = kwargs
-        self.params.update(kwargs)
         self._max_results = 5000
         self._profiles = None
 
     def set_max_results(self, results):
         self._max_results = results
 
-    def _build_query(self):
-        query = 'SELECT * FROM profiles'
-        if self.params:
-            query += ' WHERE'
-        for parameter, values in self.params.items():
-            sql_filter = pre_filter_factory(parameter, values)
-            if sql_filter:
-                query += ' ' + sql_filter.value() + ' AND'
-        if query.endswith(' AND'):
-            query = query[:-4]
-        query += ' ORDER BY system_number, profile_number'
-        return query
+    def set_filter_dict(self, filter_dict):
+        self.params = filter_dict
 
-    def execute(self):
+    def add_filter(self, param, value):
+        self.params[param] = value
+
+    def fetch(self):
         with sqlite3.connect(self.db_path) as connection:
             cursor = connection.cursor()
             self._query_metadata(cursor)
@@ -59,6 +52,19 @@ class ItpQuery:
             for field, value in zip(fields, row):
                 setattr(this_profile, field, value)
             self._profiles.append(this_profile)
+
+    def _build_query(self):
+        query = 'SELECT * FROM profiles'
+        if self.params:
+            query += ' WHERE'
+        for parameter, values in self.params.items():
+            sql_filter = pre_filter_factory(parameter, values)
+            if sql_filter:
+                query += ' ' + sql_filter.value() + ' AND'
+        if query.endswith(' AND'):
+            query = query[:-4]
+        query += ' ORDER BY system_number, profile_number'
+        return query
 
     def _query_profiles(self, cursor):
         for profile in self._profiles:
@@ -83,8 +89,9 @@ def pre_filter_factory(parameter, values):
         'longitude': LongitudeFilter,
         'date_time': DateTimeFilter
     }
-    if parameter in parameter_classes.keys():
-        return parameter_classes[parameter](values)
+    if parameter not in parameter_classes.keys():
+        raise ValueError('Unknown filter {}'.format(parameter))
+    return parameter_classes[parameter](values)
 
 
 class SqlFilter:
