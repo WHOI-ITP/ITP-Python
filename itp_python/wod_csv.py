@@ -3,6 +3,7 @@ from itp_python.itp import ItpProfile
 from pathlib import Path
 from itp_python.ctd_parser import CTDParser
 import logging
+from collections.abc import Iterable
 
 
 logging.basicConfig(format='%(asctime)s %(message)s',
@@ -14,7 +15,7 @@ logging.basicConfig(format='%(asctime)s %(message)s',
 MISSING_VALUE = '---0---'
 
 
-class WODCollection:
+class WODCollection(Iterable):
     def __init__(self, paths):
         self.paths = paths
 
@@ -43,7 +44,7 @@ class WODCollection:
                     if not data:
                         break
                     try:
-                        return WODParser(data, 'WOD data').parse()
+                        yield WODParser(data, 'WOD data').parse()
                     except ValueError:
                         return None
                     except TypeError:
