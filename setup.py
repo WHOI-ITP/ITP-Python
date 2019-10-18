@@ -10,5 +10,5 @@ setup(
     description='Python software for accessing and manipulating Ice '
                 'Tethered Profiler data',
     packages=['itp_python', ],
-    setup_requires=['h5py', 'numpy', 'pytest', 'pytest-cov', 'pytest-mock']
+    install_requires=['h5py', 'numpy', 'pytest', 'pytest-cov', 'pytest-mock']
 )
