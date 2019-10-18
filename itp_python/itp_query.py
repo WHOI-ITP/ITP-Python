@@ -3,6 +3,16 @@ import numpy as np
 from pathlib import Path
 
 
+class Profile:
+    """
+    This is currently an empty container so profiles can be accessed using
+    "dot" notation as opposed to storing attributes in a dict.
+    Eventually other functionality (e.g. derived values) can be added here.
+    """
+    def __init__(self):
+        pass
+
+
 class ItpQuery:
     def __init__(self, db_path, **kwargs):
         self.db_path = Path(db_path)
@@ -25,7 +35,6 @@ class ItpQuery:
         if query.endswith(' AND'):
             query = query[:-4]
         query += ' ORDER BY system_number, profile_number'
-        print(query)
         return query
 
     def execute(self):
@@ -38,6 +47,7 @@ class ItpQuery:
     def _query_metadata(self, cursor):
         results = cursor.execute(self._build_query())
         fields = [x[0] for x in results.description]
+        fields[0] = '_id'
         rows = results.fetchall()
         if len(rows) > self._max_results:
             error_str = '{} results exceed maximum of {}'
@@ -45,11 +55,14 @@ class ItpQuery:
                 error_str.format(len(rows), self._max_results))
         self._profiles = []
         for row in rows:
-            self._profiles.append(dict(zip(fields, row)))
+            this_profile = Profile()
+            for field, value in zip(fields, row):
+                setattr(this_profile, field, value)
+            self._profiles.append(this_profile)
 
     def _query_profiles(self, cursor):
         for profile in self._profiles:
-            profile_id = profile['id']
+            profile_id = profile._id
             fields = ['pressure', 'temperature', 'salinity']
             format_str = '{0}/10000.0 as {0}'
             query = 'SELECT '
@@ -60,10 +73,7 @@ class ItpQuery:
             results = cursor.execute(query)
             values = np.array(results.fetchall())
             for i, field in enumerate(fields):
-                try:
-                    profile[field] = values[:, i]
-                except IndexError:
-                    profile[field] = np.array([])
+                setattr(profile, field, values[:, i])
 
 
 def pre_filter_factory(parameter, values):
