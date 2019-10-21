@@ -138,7 +138,7 @@ class LongitudeFilter(SqlFilter):
                 raise ValueError('Longitude must be in range -180 to 180')
 
     def value(self):
-        lon_format = '(longitude > {0} {2} longitude < {1))'
+        lon_format = '(longitude > {0} {2} longitude < {1})'
         lon = self.params
         logical = 'OR' if lon[1] < lon[0] else 'AND'
         return lon_format.format(*lon, logical)
