@@ -26,8 +26,8 @@ You must supply `db_path` -a path to the ITP database. A variety of keyword argu
 Keyword | Description
 :--- | :---
 latitude | a two element list specifying the Southern and Northern bounding parallels. Acceptable range is [-90 to 90]
-longitude | a two element list specifying the Western and Eastern bounding meridians. Acceptable meridian range is [-180, 180].
-date_time | a two element list specifying the start and end times of the search. Times must be specified in Python `datetime`.
+longitude | a two element list specifying the Western and Eastern bounding meridians. Acceptable meridian range is [-180 to 180].
+date_time | a two element list specifying the start and end time bounds. Times must be specified in Python `datetime`.
 system | a list of ITP system numbers to filter for.
 
 ```
@@ -70,7 +70,7 @@ with the following properties:
 
 Property | Description 
 :---|:---
-date_time | an ISO8601 representation of the time when the profile began 
+date_time | an ISO8601 string representation of the time when the profile began in UTC  
 latitude  |the latitude where the profile began 
 longitude | the longitude where the profile began 
 system_number | an integer representing the ITP number 
@@ -79,6 +79,14 @@ source | the original filename used to generate the profile in the database
 pressure | a Numpy array (1xN) 
 temperature | a Numpy array (1xN) 
 salinity | a Numpy array (1xN) 
+
+#### Methods
+**python_datetime**()  
+Returns the time the profile began as Python datetime.
+
+**posix_time**()  
+Returns the time the profile began in POSIX time, the number of seconds since
+1970-01-01T00:00:00.
 
 #### Example Usage
 Return all profiles bounded by the parallels 70 and 80 degrees, the meridians -170 and -140 degrees, during the year 2010. Pass in the arguments using the constructor.
@@ -109,7 +117,6 @@ ax.plot(results[0].salinity, results[0].pressure)
 ax.invert_yaxis()
 ax.set_xlabel('Salinity')
 ax.set_ylabel('Pressure (dbar)')
-
 ```
 <img src='https://github.com/WHOI-ITP/ITP-Python/raw/master/resources/salinity_vs_pressure.PNG' width='400'/>
 
