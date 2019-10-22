@@ -98,7 +98,7 @@ Plot salinity vs pressure for the first profile.
 query.add_filter('system'=[1,2,3])
 results = query.fetch()
 ```
-<img src='https://raw.githubusercontent.com/WHOI-ITP/ITP-Python/master/resources/salinity_vs_pressure.PNG' width='400'/>
+<img src='https://github.com/WHOI-ITP/ITP-Python/raw/master/resources/salinity_vs_pressure.PNG' width='400'/>
 
 **Plot a drift track for ITP1**
 ```
