@@ -1,17 +1,27 @@
 import sqlite3
 import numpy as np
 from pathlib import Path
-from collections import namedtuple
+from datetime import datetime
 
 
 class Profile:
-    """
-    This is currently an empty container so profiles can be accessed using
-    "dot" notation as opposed to storing attributes in a dict.
-    Eventually other functionality (e.g. derived values) can be added here.
-    """
     def __init__(self):
-        pass
+        self._id = None
+        self.system_number = None
+        self.profile_number = None
+        self.date_time = None
+        self.latitude = None
+        self.longitude = None
+        self.pressure = None
+        self.salinity = None
+        self.temperature = None
+        self.source = None
+
+    def python_datetime(self):
+        return datetime.strptime(self.date_time, '%Y-%m-%dT%H:%M:%S')
+
+    def posix_time(self):
+        return self.python_datetime().timestamp()
 
 
 class ItpQuery:
