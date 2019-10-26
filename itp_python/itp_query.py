@@ -41,7 +41,7 @@ class ItpQuery:
         self.params[param] = value
 
     def fetch(self):
-        with sqlite3.connect(self.db_path) as connection:
+        with sqlite3.connect(str(self.db_path.absolute())) as connection:
             cursor = connection.cursor()
             self._query_metadata(cursor)
             self._query_profiles(cursor)
