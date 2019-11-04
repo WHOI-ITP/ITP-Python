@@ -81,6 +81,15 @@ temperature | a Numpy array (1xN)
 salinity | a Numpy array (1xN) 
 
 #### Methods
+**potential_temperature**()  
+Calculates potential temperature from in-situ temperature.
+
+**height**()  
+Calculates height from sea pressure (+ up)
+
+**depth**()  
+Calculates depth from sea pressure; simply negative height. (+ down)
+
 **python_datetime**()  
 Returns the time the profile began as Python datetime.
 

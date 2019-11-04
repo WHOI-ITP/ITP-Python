@@ -2,6 +2,7 @@ import sqlite3
 import numpy as np
 from pathlib import Path
 from datetime import datetime
+import gsw.conversions as sw
 
 
 class Profile:
@@ -22,6 +23,22 @@ class Profile:
 
     def posix_time(self):
         return self.python_datetime().timestamp()
+
+    def depth(self):
+        return -self.height()
+
+    def height(self):
+        return sw.z_from_p(self.pressure, self.latitude)
+
+    def potential_temperature(self, p_ref=0):
+        absolute_salinity = sw.SA_from_SP(self.salinity,
+                                          self.pressure,
+                                          self.longitude,
+                                          self.latitude)
+        return sw.pt_from_t(absolute_salinity,
+                            self.temperature,
+                            self.pressure,
+                            p_ref)
 
 
 class ItpQuery:
