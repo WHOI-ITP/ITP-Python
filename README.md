@@ -81,7 +81,7 @@ temperature | a Numpy array (1xN)
 salinity | a Numpy array (1xN) 
 
 #### Methods
-**potential_temperature**()  
+**potential_temperature**(*[p_ref=0]*)  
 Calculates potential temperature from in-situ temperature.
 
 **height**()  
@@ -153,4 +153,3 @@ m.plot(longitude, latitude, latlon=True)
   4. To plot geographic data on a map, you need to install basemap for matplotlib. If using
   Windows, visit https://www.lfd.uci.edu/~gohlke/pythonlibs/#basemap for a 
   precompiled binary. Download, then install using pip.
-
