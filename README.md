@@ -55,7 +55,8 @@ query.add_filter(latitude=[80, 90])
 ```
 
 **fetch**()  
-Execute a search of the ITP database using the pre-specified filters.
+Execute a search of the ITP database using the pre-specified filters. Returns 
+a list of `profile` objects that match the search criteria.
 
 **set_max_results**(*n_results*)  
 By default, `fetch` is limited to returning 5000 profiles in order to avoid 
@@ -85,13 +86,13 @@ salinity | a Numpy array (1xN)
 Calculates potential temperature from in-situ temperature.
 
 **height**()  
-Calculates height from sea pressure (+ up)
+Calculates height from sea pressure (+ up).
 
 **depth**()  
-Calculates depth from sea pressure; simply negative height. (+ down)
+Calculates depth from sea pressure; simply negative height (+ down).
 
 **python_datetime**()  
-Returns the time the profile began as Python datetime.
+Returns the time the profile began as a Python datetime object.
 
 **posix_time**()  
 Returns the time the profile began in POSIX time, the number of seconds since
