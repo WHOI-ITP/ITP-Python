@@ -15,7 +15,7 @@ This guide will help you install ITP-Python and setup a virtual environment to r
 
 ## (Optional) Setup Virtual Environment
 1. Using a shell, browse to the ITP-Python folder that was just cloned
-2. From the command line: `virtualenv venv`
+2. From the command line: `python -m venv venv`
 3. `venv\Scripts\activate`
 3. `pip install -r requirements.txt`
 4. `pip install .`

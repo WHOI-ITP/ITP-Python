@@ -5,7 +5,7 @@ import operator
 from collections.abc import Iterable
 from pathlib import Path
 from datetime import datetime
-from itp_python.itp import ItpProfile
+from build_database.itp import ItpProfile
 
 
 def to_string(array):

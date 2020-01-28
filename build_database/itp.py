@@ -13,6 +13,9 @@ class ItpProfile:
     def metadata(self, field):
         return self._metadata[field]
 
+    def n_samples(self):
+        return len(self._variables['pressure'])
+
     def variables(self):
         return list(self._variables.keys())
 

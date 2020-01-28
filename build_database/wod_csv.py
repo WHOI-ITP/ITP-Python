@@ -1,14 +1,14 @@
 from datetime import datetime, timedelta
-from itp_python.itp import ItpProfile
+from build_database.itp import ItpProfile
 from pathlib import Path
-from itp_python.ctd_parser import CTDParser
+from build_database.ctd_parser import CTDParser
 import logging
 from collections.abc import Iterable
 
 
 logging.basicConfig(format='%(asctime)s %(message)s',
                     datefmt='%Y/%m/%dT%I:%M:%S',
-                    filename='wod_csv.log',
+                    filename='../itp_python/wod_csv.log',
                     filemode='w',
                     level=logging.DEBUG)
 

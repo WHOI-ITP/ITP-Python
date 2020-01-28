@@ -1,6 +1,6 @@
-from itp_python.utils import julian_to_iso8601
+from build_database.utils import julian_to_iso8601
 from pathlib import Path
-from itp_python.ctd_parser import CTDParser
+from build_database.ctd_parser import CTDParser
 import re
 
 

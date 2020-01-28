@@ -1,12 +1,12 @@
 import sqlite3
 from pathlib import Path
-from itp_python.itp import REQUIRED_VARIABLES
+from build_database.itp import REQUIRED_VARIABLES
 import os
 import time
 from datetime import datetime
 
-from itp_python.itp_final import ITPFinalCollection
-from itp_python.wod_csv import WODCollection
+from build_database.itp_final import ITPFinalCollection
+from build_database.wod_csv import WODCollection
 
 """
 This module will build an SQLite database from itp_final profiles.
@@ -85,7 +85,7 @@ def build_db(path, include_bio=False):
 
 
 def write_to_db(c, itp_profile):
-    c.execute('INSERT INTO profiles VALUES (?,?,?,?,?,?,?,?)', (
+    c.execute('INSERT INTO profiles VALUES (?,?,?,?,?,?,?)', (
         None,
         itp_profile.metadata('system_number'),
         itp_profile.metadata('profile_number'),
@@ -96,7 +96,7 @@ def write_to_db(c, itp_profile):
     )
     rowid = c.lastrowid
     scaled_values = {v: itp_profile.scaled_data(v) for v in REQUIRED_VARIABLES}
-    for i in range(itp_profile.metadata('n_depths')):
+    for i in range(itp_profile.n_samples()):
         c.execute('INSERT INTO ctd VALUES (?,?,?,?,?)', (
             None,
             rowid,
@@ -124,7 +124,7 @@ def write_to_db(c, itp_profile):
 
 
 if __name__ == '__main__':
-    PATH = 'E:/ITP Data'
+    PATH = 'E:/ITP Data/final'
 
     stime = time.time()
     db_filename = 'itp_' + datetime.now().strftime('%Y_%m_%d') + '.db'
@@ -132,9 +132,10 @@ if __name__ == '__main__':
     connection = sqlite3.connect(db_filename)
     cursor = connection.cursor()
 
-    classes = [WODCollection, ITPFinalCollection]
+    classes = [ITPFinalCollection]
+    # classes = [WODCollection, ITPFinalCollection]
     for klass in classes:
-        for i, profile in enumerate(klass(PATH)):
+        for i, profile in enumerate(klass.glob(PATH)):
             write_to_db(cursor, profile)
             if i % 1000 == 0:
                 print(i)
