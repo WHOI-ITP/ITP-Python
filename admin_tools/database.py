@@ -1,17 +1,12 @@
-import sqlite3
-from pathlib import Path
-from build_database.itp import REQUIRED_VARIABLES
 import os
+import sqlite3
+import sys
 import time
+from admin_tools.itp import REQUIRED_VARIABLES
+from admin_tools.itp_final import ITPFinalCollection
+from admin_tools.wod_csv import WODCollection
 from datetime import datetime
-
-from build_database.itp_final import ITPFinalCollection
-from build_database.wod_csv import WODCollection
-
-"""
-This module will build an SQLite database from itp_final profiles.
-Unzip the itpXfinal.zip folders, and point PATH to the containing folder
-"""
+from pathlib import Path
 
 
 def build_db(path, include_bio=False):
@@ -124,18 +119,18 @@ def write_to_db(c, itp_profile):
 
 
 if __name__ == '__main__':
-    PATH = 'E:/ITP Data/final'
-
-    stime = time.time()
-    db_filename = 'itp_' + datetime.now().strftime('%Y_%m_%d') + '.db'
+    if len(sys.argv) < 2:
+        raise ValueError('No input path specified')
+    path = Path(sys.argv[1])
+    start_time = time.time()
+    db_filename = path / ('itp_' + datetime.now().strftime('%Y_%m_%d') + '.db')
     build_db(db_filename, include_bio=False)
     connection = sqlite3.connect(db_filename)
     cursor = connection.cursor()
-
     classes = [ITPFinalCollection]
     # classes = [WODCollection, ITPFinalCollection]
     for klass in classes:
-        for i, profile in enumerate(klass.glob(PATH)):
+        for i, profile in enumerate(klass.glob(path)):
             write_to_db(cursor, profile)
             if i % 1000 == 0:
                 print(i)
@@ -143,5 +138,5 @@ if __name__ == '__main__':
         connection.commit()
     connection.close()
     etime = time.time()
-    print('Database built in {:0.1f} seconds'.format(etime-stime))
+    print('Database built in {:0.1f} seconds'.format(etime - start_time))
 

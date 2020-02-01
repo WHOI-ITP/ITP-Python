@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
-from build_database.itp import ItpProfile
+from admin_tools.itp import ItpProfile
 from pathlib import Path
-from build_database.ctd_parser import CTDParser
+from admin_tools.ctd_parser import CTDParser
 import logging
 from collections.abc import Iterable
 

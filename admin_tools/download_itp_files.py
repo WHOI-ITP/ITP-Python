@@ -1,6 +1,6 @@
-import ftputil
 import re
 import sys
+from ftputil import FTPHost
 from hashlib import md5
 from pathlib import Path
 from zipfile import ZipFile
@@ -16,7 +16,8 @@ on the FTP site.
 
 def download_itp_files(directory):
     r = re.compile(r'itp[0-9]*final.zip')
-    with ftputil.FTPHost('ftp.whoi.edu', 'anonymous', 'guest') as ftp_host:
+    with FTPHost('ftp.whoi.edu', 'anonymous', 'guest') as ftp_host:
+        ftp_host.use_list_a_option = False
         print('Connecting ftp.whoi.edu')
         ftp_host.chdir('/whoinet/itpdata/')
         print('Retrieving file list')

@@ -1,4 +1,4 @@
-from build_database.itp import ItpProfile
+from admin_tools.itp import ItpProfile
 
 
 class CTDParser:

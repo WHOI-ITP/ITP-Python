@@ -1,4 +1,4 @@
-from build_database.itp_final import ITPFinalCollection
+from admin_tools.itp_final import ITPFinalCollection
 import os
 import pytest
 
