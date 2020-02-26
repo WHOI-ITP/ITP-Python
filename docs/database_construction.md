@@ -11,7 +11,7 @@ python download_itp_files.py C:/data/path/
 The software will download all the latest itp files from WHOI's FTP server and unzip them tp the specified path. If there are already ITP files in the directory, the software will only download files that have changed since last time.
 
 ## Build the database
-Specify the directory from the last step when building the database.
+Specify the directory from the last step when building the database. Specify the product you would like to build. The supported types are `final`, `cormat`, `grid`, `raw`
 ```
-python build_database.py C:/data/path/
+python database.py C:/data/path/ final
 ```

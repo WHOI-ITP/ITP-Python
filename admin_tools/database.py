@@ -2,6 +2,8 @@ import os
 import sqlite3
 import sys
 import time
+from admin_tools.cormat import CormatCollection
+from admin_tools.grid import ITPGridCollection
 from admin_tools.itp import REQUIRED_VARIABLES
 from admin_tools.itp_final import ITPFinalCollection
 from admin_tools.wod_csv import WODCollection
@@ -9,7 +11,15 @@ from datetime import datetime
 from pathlib import Path
 
 
-def build_db(path, include_bio=False):
+PRODUCTS = {
+    'final': ITPFinalCollection,
+    'cormat': CormatCollection,
+    'grid': ITPGridCollection,
+    'raw': None
+}
+
+
+def create_empty_db(path, include_bio=False):
     try:
         os.remove(path)
     except FileNotFoundError:
@@ -119,23 +129,28 @@ def write_to_db(c, itp_profile):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) < 2:
-        raise ValueError('No input path specified')
+    assert len(sys.argv) > 1, 'No input path specified'
     path = Path(sys.argv[1])
+    product = 'final'
+    if len(sys.argv) > 2:
+        product_arg = sys.argv[2]
+        assert product_arg in PRODUCTS.keys(), 'Invalid product type'
+        product = PRODUCTS[product_arg]
+
     start_time = time.time()
-    db_filename = path / ('itp_' + datetime.now().strftime('%Y_%m_%d') + '.db')
-    build_db(db_filename, include_bio=False)
+    db_filename = path / ('itp_' + product_arg + '_' + datetime.now().strftime('%Y_%m_%d') + '.db')
+
+    create_empty_db(db_filename, include_bio=False)
     connection = sqlite3.connect(db_filename)
     cursor = connection.cursor()
-    classes = [ITPFinalCollection]
-    # classes = [WODCollection, ITPFinalCollection]
-    for klass in classes:
-        for i, profile in enumerate(klass.glob(path)):
-            write_to_db(cursor, profile)
-            if i % 1000 == 0:
-                print(i)
-                connection.commit()
-        connection.commit()
+
+    for i, profile in enumerate(product.glob(path)):
+        write_to_db(cursor, profile)
+        if i % 1000 == 0:
+            print(i)
+            connection.commit()
+
+    connection.commit()
     connection.close()
     etime = time.time()
     print('Database built in {:0.1f} seconds'.format(etime - start_time))

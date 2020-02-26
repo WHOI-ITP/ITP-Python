@@ -14,20 +14,29 @@ on the FTP site.
 """
 
 
-def download_itp_files(directory):
-    r = re.compile(r'itp[0-9]*final.zip')
+PRODUCTS = {
+    'final': re.compile(r'itp[0-9]*final.zip'),
+    'cormat': re.compile(r'itp[0-9]*cormat.zip'),
+    'grid': re.compile(r'itp[0-9]*grddata.zip'),
+    'raw': re.compile(r'itp[0-9]*rawmat.zip')
+}
+
+
+def download_itp_files(directory, product):
+    product_filter = PRODUCTS[product]
+    (directory / 'zipped').mkdir(parents=True, exist_ok=True)
     with FTPHost('ftp.whoi.edu', 'anonymous', 'guest') as ftp_host:
         ftp_host.use_list_a_option = False
         print('Connecting ftp.whoi.edu')
         ftp_host.chdir('/whoinet/itpdata/')
         print('Retrieving file list')
         files = ftp_host.listdir(ftp_host.curdir)
-        final_files = list(filter(r.match, files))
+        final_files = list(filter(product_filter.match, files))
         print(f'{len(final_files)} ITP files found')
         ftp_host.download('MD5SUMS', directory / 'md5.txt')
         checksums = parse_checksums(directory / 'md5.txt')
         new_files = False
-        (directory / 'zipped').mkdir(parents=True, exist_ok=True)
+
 
         for file_name in final_files:
             local_path = directory / 'zipped' / file_name
@@ -81,9 +90,13 @@ def calc_md5(path):
 
 
 if __name__ == '__main__':
-    parent = ''
+    destination_arg = ''
+    product_arg = 'final'
     if len(sys.argv) > 1:
-        parent = sys.argv[1]
-    directory = Path(parent) / 'final'
-    download_itp_files(directory)
+        destination_arg = sys.argv[1]
+    if len(sys.argv) > 2:
+        product_arg = sys.argv[2]
+        assert product_arg in PRODUCTS.keys()
+    directory = Path(destination_arg) / product_arg
+    download_itp_files(directory, product_arg)
     unzip_files(directory)

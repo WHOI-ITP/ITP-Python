@@ -2,7 +2,7 @@ import sqlite3
 import numpy as np
 from pathlib import Path
 from datetime import datetime
-import gsw.conversions as sw
+import gsw
 from itp_python.filters import pre_filter_factory
 
 
@@ -29,17 +29,37 @@ class Profile:
         return -self.height()
 
     def height(self):
-        return sw.z_from_p(self.pressure, self.latitude)
+        return gsw.conversions.z_from_p(self.pressure, self.latitude)
+
+    def absolute_salinity(self):
+        return gsw.conversions.SA_from_SP(
+            self.salinity,
+            self.pressure,
+            self.longitude,
+            self.latitude
+        )
+
+    def conservative_temperature(self):
+        return gsw.conversions.CT_from_t(
+            self.absolute_salinity(),
+            self.temperature,
+            self.pressure
+        )
+
+    def density(self):
+        return gsw.density.rho(
+            self.absolute_salinity(),
+            self.conservative_temperature(),
+            self.pressure
+        )
 
     def potential_temperature(self, p_ref=0):
-        absolute_salinity = sw.SA_from_SP(self.salinity,
-                                          self.pressure,
-                                          self.longitude,
-                                          self.latitude)
-        return sw.pt_from_t(absolute_salinity,
-                            self.temperature,
-                            self.pressure,
-                            p_ref)
+        return gsw.conversions.pt_from_t(
+            self.absolute_salinity(),
+            self.temperature,
+            self.pressure,
+            p_ref
+        )
 
 
 class ItpQuery:

@@ -26,5 +26,5 @@ class ItpProfile:
         """
         This is used to read data before writing to the database.
         """
-        return [None if x is None else int(x * 10000)
+        return [None if x is None else round(x * 10000)
                 for x in self.data(field)]
