@@ -61,6 +61,20 @@ class Profile:
             p_ref
         )
 
+    def freezing_temperature(self):
+        return gsw.CT_freezing(
+            self.absolute_salinity(),
+            self.pressure,
+            saturation_fraction=1
+        )
+
+    def heat_capacity(self):
+        return gsw.cp_t_exact(
+            self.absolute_salinity(),
+            self.temperature,
+            self.pressure
+        )
+
 
 class ItpQuery:
     def __init__(self, db_path, **kwargs):
