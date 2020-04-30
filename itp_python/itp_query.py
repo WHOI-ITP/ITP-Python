@@ -61,10 +61,10 @@ class Profile:
             p_ref
         )
 
-    def freezing_temperature(self):
+    def freezing_temperature_zero_pressure(self):
         return gsw.CT_freezing(
             self.absolute_salinity(),
-            self.pressure,
+            p=0,
             saturation_fraction=1
         )
 
