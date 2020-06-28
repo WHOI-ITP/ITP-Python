@@ -79,9 +79,25 @@ def create_empty_db(path, include_bio=False):
         )
 
         c.execute(
+            ''' 
+            CREATE TABLE profile_extra_variables (
+                profile_id INTEGER,
+                variable_id INTEGER
+            )
+            '''
+        )
+
+        c.execute(
             '''
             CREATE INDEX idx_variable_name_pid
             ON other_variables(ctd_id)
+            '''
+        )
+
+        c.execute(
+            '''
+            CREATE INDEX idx_variable_id
+            ON profile_extra_variables(variable_id)
             '''
         )
 
@@ -110,37 +126,43 @@ def write_to_db(c, itp_profile):
             scaled_values['salinity'][i])
         )
 
-    # other_variables = set(itp_profile.variables()) - set(REQUIRED_VARIABLES)
-    # if other_variables:
-    #     ctd_id = c.execute('SELECT id FROM ctd '
-    #                        'WHERE profile_id = ? '
-    #                        'ORDER BY id', (rowid,)).fetchall()
-    #     for variable in other_variables:
-    #         assert len(ctd_id) == len(itp_profile.data(variable))
-    #         c.execute('INSERT OR IGNORE INTO variable_names VALUES (?,?)',
-    #                   (None, variable))
-    #         sensor_id = c.execute('SELECT id FROM variable_names WHERE name=?',
-    #                               (variable,)).fetchone()
-    #         for i, value in enumerate(itp_profile.scaled_data(variable)):
-    #             if value is None:
-    #                 continue
-    #             c.execute('INSERT INTO other_variables VALUES (?, ?, ?)',
-    #                       (ctd_id[i][0], sensor_id[0], value))
+    other_variables = set(itp_profile.variables()) - set(REQUIRED_VARIABLES)
+    if other_variables:
+        ctd_id = c.execute('SELECT id FROM ctd '
+                           'WHERE profile_id = ? '
+                           'ORDER BY id', (rowid,)).fetchall()
+        for variable in other_variables:
+            assert len(ctd_id) == len(itp_profile.data(variable))
+            c.execute('INSERT OR IGNORE INTO variable_names VALUES (?,?)',
+                      (None, variable))
+            sensor_id = c.execute('SELECT id FROM variable_names WHERE name=?',
+                                  (variable,)).fetchone()
+            c.execute(
+                'INSERT OR IGNORE INTO profile_extra_variables VALUES (?,?)',
+                (rowid, sensor_id[0]))
+            for i, value in enumerate(itp_profile.scaled_data(variable)):
+                if value is None:
+                    continue
+                c.execute('INSERT INTO other_variables VALUES (?, ?, ?)',
+                          (ctd_id[i][0], sensor_id[0], value))
 
 
 if __name__ == '__main__':
+    # sys.argv.append(r'D:\ITP Data\final\itp65final')
+
     assert len(sys.argv) > 1, 'No input path specified'
     path = Path(sys.argv[1])
-    product = 'final'
+    product_arg = 'final'
     if len(sys.argv) > 2:
         product_arg = sys.argv[2]
         assert product_arg in PRODUCTS.keys(), 'Invalid product type'
-        product = PRODUCTS[product_arg]
+
+    product = PRODUCTS[product_arg]
 
     start_time = time.time()
     db_filename = path / ('itp_' + product_arg + '_' + datetime.now().strftime('%Y_%m_%d') + '.db')
-
-    create_empty_db(db_filename, include_bio=False)
+    # import pdb; pdb.set_trace()
+    create_empty_db(db_filename, include_bio=True)
     connection = sqlite3.connect(db_filename)
     cursor = connection.cursor()
 

@@ -5,7 +5,8 @@ def pre_filter_factory(parameter, values):
         'system': SystemFilter,
         'latitude': LatitudeFilter,
         'longitude': LongitudeFilter,
-        'date_time': DateTimeFilter
+        'date_time': DateTimeFilter,
+        'extra_variables': ExtraVariableFilter
     }
     if parameter not in parameter_classes.keys():
         raise ValueError('Unknown filter {}'.format(parameter))
@@ -71,3 +72,21 @@ class DateTimeFilter(SqlFilter):
         format_str = '(date_time BETWEEN "{}" AND "{}")'
         iso_times = [x.strftime('%Y-%m-%dT%H:%M:%S') for x in self.params]
         return format_str.format(*iso_times)
+
+
+class ExtraVariableFilter(SqlFilter):
+    def _check(self):
+        pass
+
+    def value(self):
+        self.params = [self.params] if type(self.params) is str else self.params
+        format_str = '''
+            profiles.id IN 
+                (SELECT profile_id FROM profile_extra_variables 
+                    INNER JOIN variable_names 
+                    ON profile_extra_variables.variable_id == variable_names.id 
+                    WHERE variable_names.name IN ({})
+                )
+        '''
+        variables = ','.join(['"{}"'.format(v) for v in self.params])
+        return format_str.format(variables)

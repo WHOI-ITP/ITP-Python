@@ -23,6 +23,7 @@ PRODUCTS = {
 
 
 def download_itp_files(directory, product):
+    print('Starting download')
     product_filter = PRODUCTS[product]
     (directory / 'zipped').mkdir(parents=True, exist_ok=True)
     with FTPHost('ftp.whoi.edu', 'anonymous', 'guest') as ftp_host:

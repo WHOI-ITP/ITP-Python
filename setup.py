@@ -9,12 +9,13 @@ setup(
     author_email='jeffery.grant@gmail.com',
     description='Python software for accessing and manipulating Ice '
                 'Tethered Profiler data',
-    packages=['itp_python', ],
+    packages=['itp_python'],
     install_requires=[
         'h5py',
         'numpy',
         'gsw',
         'pytest',
         'pytest-cov',
-        'pytest-mock']
+        'pytest-mock',
+        'ftputil']
 )
