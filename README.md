@@ -29,6 +29,7 @@ latitude | a two element list specifying the Southern and Northern bounding para
 longitude | a two element list specifying the Western and Eastern bounding meridians. Acceptable meridian range is [-180 to 180].
 date_time | a two element list specifying the start and end time bounds. Times must be specified in Python `datetime`.
 system | a list of ITP system numbers to filter for.
+extra_variables | a list of "extra variables" that must be present in the profiles. If multiple variables are provided, the result will be an OR query (i.e. the results will have at least one of the variables, but not necessarily all). Supported values are: dissolved_oxygen, nacm, vert, east, north, par, turbidity, cdom, chlorophyll_a.
 
 ```
 query = ItpQuery('C:/path/to/itp_db.db', latitude=[75, 80], longitude=[-135, -90])
