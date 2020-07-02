@@ -3,7 +3,7 @@ import numpy as np
 from pathlib import Path
 from datetime import datetime
 import gsw
-from itp_python.filters import pre_filter_factory
+from itp_python.filters import pre_filter_factory, ExtraVariableJoin
 
 
 class Profile:
@@ -79,7 +79,7 @@ class Profile:
 class ItpQuery:
     def __init__(self, db_path, **kwargs):
         self.db_path = Path(db_path)
-        self.params = kwargs
+        self.args = kwargs
         self._max_results = 5000
         self._profiles = None
 
@@ -87,20 +87,31 @@ class ItpQuery:
         self._max_results = results
 
     def set_filter_dict(self, filter_dict):
-        self.params = filter_dict
+        self.args = filter_dict
 
     def add_filter(self, param, value):
-        self.params[param] = value
+        self.args[param] = value
 
     def fetch(self):
         with sqlite3.connect(str(self.db_path.absolute())) as connection:
             cursor = connection.cursor()
+            self._check_extra_fields(cursor)
             self._query_metadata(cursor)
             self._query_profiles(cursor)
         return self._profiles
 
+    def _check_extra_fields(self, cursor):
+        if 'extra_variables' not in self.args:
+            return
+        sql = 'SELECT name FROM variable_names'
+        known_extra_vars = cursor.execute(sql).fetchall()
+        known_extra_vars = [f[0] for f in known_extra_vars]
+        for var in self.args['extra_variables']:
+            if var not in known_extra_vars:
+                raise ValueError('Unknown extra_variable {}'.format(var))
+
     def _query_metadata(self, cursor):
-        results = cursor.execute(self._build_query())
+        results = cursor.execute(*self._build_query())
         fields = [x[0] for x in results.description]
         fields[0] = '_id'
         rows = results.fetchall()
@@ -117,28 +128,47 @@ class ItpQuery:
 
     def _build_query(self):
         query = 'SELECT * FROM profiles'
-        if self.params:
+        sql_args = []
+        if self.args:
             query += ' WHERE'
-        for parameter, values in self.params.items():
-            sql_filter = pre_filter_factory(parameter, values)
+        for argument, values in self.args.items():
+            sql_filter = pre_filter_factory(argument, values)
             if sql_filter:
-                query += ' ' + sql_filter.value() + ' AND'
+                sql, these_args = sql_filter.value()
+                query += ' ' + sql + ' AND'
+                sql_args.extend(these_args)
         if query.endswith(' AND'):
             query = query[:-4]
         query += ' ORDER BY system_number, profile_number'
-        return query
+        return query, sql_args
 
     def _query_profiles(self, cursor):
         for profile in self._profiles:
             profile_id = profile._id
             fields = ['pressure', 'temperature', 'salinity']
+            # for variable in self.args['extra_variables']:
+            #     fields.append(variable)
             format_str = '{0}/10000.0 as {0}'
-            query = 'SELECT '
-            query += ', '.join([format_str.format(x) for x in fields])
-            query += ' FROM ctd'
-            query += ' WHERE profile_id = {} ORDER BY pressure'.format(
+            sql = 'SELECT '
+            sql += ', '.join([format_str.format(x) for x in fields])
+            sql += ' FROM ctd'
+            sql += ' WHERE profile_id = {} ORDER BY pressure'.format(
                 profile_id)
-            results = cursor.execute(query)
-            values = np.array(results.fetchall())
+            results = cursor.execute(sql)
+            values = np.array(results.fetchall(), dtype=np.float)
             for i, field in enumerate(fields):
                 setattr(profile, field, values[:, i])
+            if 'extra_variables' in self.args:
+                self._load_extra_variables(cursor, profile)
+
+    def _load_extra_variables(self, cursor, profile):
+        for var in self.args['extra_variables']:
+            sql = 'SELECT value/10000.0 val FROM ctd '
+            sql += 'LEFT JOIN other_variables '
+            sql += 'ON ctd.id == other_variables.ctd_id AND variable_id == '
+            sql += '(SELECT id FROM variable_names WHERE name == ?) '
+            sql += 'WHERE ctd.profile_id == ?'
+            sql += 'ORDER BY pressure'
+            results = cursor.execute(sql, [var, profile._id])
+            values = np.array(results.fetchall(), dtype=np.float)
+            setattr(profile, var, values[:, 0])

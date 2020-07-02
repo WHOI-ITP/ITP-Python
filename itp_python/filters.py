@@ -14,9 +14,15 @@ def pre_filter_factory(parameter, values):
 
 
 class SqlFilter:
-    def __init__(self, params):
-        self.params = params
+    def __init__(self, args):
+        self.args = args
+        self._check_list()
         self._check()
+
+    def _check_list(self):
+        if type(self.args) != list:
+            raise ValueError('All arguments must be a list.')
+
 
     def _check(self):
         raise NotImplementedError
@@ -27,51 +33,53 @@ class SqlFilter:
 
 class SystemFilter(SqlFilter):
     def _check(self):
-        if type(self.params) != list:
-            raise ValueError('Systems values must be a list')
+        pass
 
     def value(self):
-        system_query = '('
-        for system in self.params:
-            system_query += 'system_number={} OR '.format(system)
-        return system_query[:-3] + ')'
+        sql = '(system_number IN (' + ','.join('?' * len(self.args)) + '))'
+        return sql, self.args
 
 
 class LatitudeFilter(SqlFilter):
     def _check(self):
-        for value in self.params:
+        if len(self.args) != 2:
+            raise ValueError('Latitude must contain exactly two values.')
+        for value in self.args:
             if value < -90 or value > 90:
                 raise ValueError('Latitude must be in range -90 to 90')
-        if self.params[0] >= self.params[1]:
+        if self.args[0] >= self.args[1]:
             raise ValueError('Latitude values must be increasing')
 
     def value(self):
-        lat_format = '(latitude >= {} AND latitude <= {})'
-        return lat_format.format(*self.params)
+        sql = '(latitude >= ? AND latitude <= ?)'
+        return sql, self.args
 
 
 class LongitudeFilter(SqlFilter):
     def _check(self):
-        for value in self.params:
+        if len(self.args) != 2:
+            raise ValueError('Longitude must contain exactly two values.')
+        for value in self.args:
             if value < -180 or value > 180:
                 raise ValueError('Longitude must be in range -180 to 180')
 
     def value(self):
-        lon_format = '(longitude > {0} {2} longitude < {1})'
-        lon = self.params
-        logical = 'OR' if lon[1] < lon[0] else 'AND'
-        return lon_format.format(*lon, logical)
+        sql = '(longitude > ? ? longitude < ?)'
+        logical = 'OR' if self.args[1] < self.args[0] else 'AND'
+        return sql, [self.args[0], logical, self.args[1]]
 
 
 class DateTimeFilter(SqlFilter):
     def _check(self):
-        if self.params[0] > self.params[1]:
+        if len(self.args) != 2:
+            raise ValueError('Datetime must contain exactly two values.')
+        if self.args[0] > self.args[1]:
             raise ValueError('End time must be after start time')
 
     def value(self):
-        format_str = '(date_time BETWEEN "{}" AND "{}")'
-        iso_times = [x.strftime('%Y-%m-%dT%H:%M:%S') for x in self.params]
-        return format_str.format(*iso_times)
+        sql = '(date_time BETWEEN "?" AND "?")'
+        iso_times = [x.strftime('%Y-%m-%dT%H:%M:%S') for x in self.args]
+        return sql, iso_times
 
 
 class ExtraVariableFilter(SqlFilter):
@@ -79,14 +87,14 @@ class ExtraVariableFilter(SqlFilter):
         pass
 
     def value(self):
-        self.params = [self.params] if type(self.params) is str else self.params
-        format_str = '''
-            profiles.id IN 
-                (SELECT profile_id FROM profile_extra_variables 
-                    INNER JOIN variable_names 
-                    ON profile_extra_variables.variable_id == variable_names.id 
-                    WHERE variable_names.name IN ({})
-                )
-        '''
-        variables = ','.join(['"{}"'.format(v) for v in self.params])
-        return format_str.format(variables)
+        sql = 'profiles.id IN '
+        sql += '(SELECT profile_id FROM profile_extra_variables '
+        sql += 'INNER JOIN variable_names '
+        sql += 'ON profile_extra_variables.variable_id == variable_names.id '
+        sql += 'WHERE variable_names.name IN '
+        sql += '(' + ','.join('?' * len(self.args)) + '))'
+        return sql, self.args
+
+
+class ExtraVariableJoin:
+    pass

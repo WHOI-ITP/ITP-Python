@@ -150,7 +150,7 @@ m.plot(longitude, latitude, latlon=True)
 ## Installation
   1. Install ITP-Python using pip:
  `pip install git+https://github.com/WHOI-ITP/ITP-Python`
-  2. Download and unzip the ITP database https://www.dropbox.com/sh/hrqfe8y2difdn2f/AADGVhBwkCcS4ZxN8s8GmZmma?dl=0
+  2. Download and unzip the ITP database https://www.dropbox.com/sh/fwivtaevuw6xn1p/AABVonV6lSbH3Ob3qeE4CL3fa?dl=0
   3. To plot data, install matplotlib `pip install matplotlib`
   4. To plot geographic data on a map, you need to install basemap for matplotlib. If using
   Windows, visit https://www.lfd.uci.edu/~gohlke/pythonlibs/#basemap for a 
