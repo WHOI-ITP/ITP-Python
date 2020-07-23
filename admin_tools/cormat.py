@@ -12,12 +12,19 @@ def to_string(array):
 
 
 class CormatCollection(Iterable):
-    def __init__(self, directory, pattern='**/cor*.mat'):
-        self.files = Path(directory).glob(pattern)
+    def __init__(self, paths):
+        if type(paths) == str:
+            paths = [paths]
+        self.paths = paths
+
+    @classmethod
+    def glob(cls, parent_directory):
+        paths = list(Path(parent_directory).glob('**/cor*.mat'))
+        return cls(paths)
 
     def __iter__(self):
-        for file_path in self.files:
-            file = CormatParser(file_path).parse()
+        for path in self.paths:
+            file = CormatParser(path).parse()
             if file:
                 yield file
 

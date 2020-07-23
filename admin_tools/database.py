@@ -6,6 +6,7 @@ from admin_tools.cormat import CormatCollection
 from admin_tools.grid import ITPGridCollection
 from admin_tools.itp import REQUIRED_VARIABLES
 from admin_tools.itp_final import ITPFinalCollection
+from admin_tools.raw import RawCollection
 from admin_tools.wod_csv import WODCollection
 from datetime import datetime
 from pathlib import Path
@@ -15,7 +16,7 @@ PRODUCTS = {
     'final': ITPFinalCollection,
     'cormat': CormatCollection,
     'grid': ITPGridCollection,
-    'raw': None
+    'raw': RawCollection
 }
 
 
@@ -162,7 +163,7 @@ if __name__ == '__main__':
     start_time = time.time()
     db_filename = path / ('itp_' + product_arg + '_' + datetime.now().strftime('%Y_%m_%d') + '.db')
     # import pdb; pdb.set_trace()
-    create_empty_db(db_filename, include_bio=True)
+    create_empty_db(db_filename, include_bio=False)
     connection = sqlite3.connect(db_filename)
     cursor = connection.cursor()
 
