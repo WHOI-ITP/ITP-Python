@@ -47,23 +47,25 @@ class ITPGridParser(CTDParser):
         self.metadata['latitude'] = float(date_and_pos[LATITUDE])
 
     def read_data(self):
-        variable_names = self._get_variable_names()
         for row in self.data[DATA_START:]:
             values = row.split()
             if row[0].startswith('%'):
                 continue  # skip comments, including header
             values = [None if v == 'NaN' else float(v) for v in values]
-            for i, field in enumerate(variable_names):
+            for i, field in enumerate(self.variables):
                 if field in self.variables.keys():
                     self.variables[field].append(values[i])
 
-    def _get_variable_names(self):
+    def get_variable_names(self):
         # remove percent sign, parentheses (with contents), and x10^4
-        sensor_names = re.sub(r'%|x10\^4|\([^)]*\)', '',
+        variable_names = re.sub(r'%|x10\^4|\([^)]*\)', '',
                               self.data[VARIABLES_LINE])
-        sensor_names = re.sub(r'-', '_', sensor_names)
-        sensor_names = sensor_names.lower()
-        return sensor_names.split()
+        variable_names = re.sub(r'-', '_', variable_names)
+        variable_names = variable_names.lower().split()
+        to_remove = set(variable_names).intersection({'nobs', 'year', 'day'})
+        for var in to_remove:
+            variable_names.remove(var)
+        self.variables = {v: list() for v in variable_names}
 
     def _init_data_dict(self, sensor_names):
         variables = dict.fromkeys(sensor_names)

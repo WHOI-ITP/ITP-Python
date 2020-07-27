@@ -48,7 +48,7 @@ def download_itp_files(directory, product):
                 print('{} failed the checksum test. The file has been '
                       'deleted. Please try running this script '
                       'again.'.format(file_name))
-                raise ValueError(f'{file_name} failed checksum test')
+                # raise ValueError(f'{file_name} failed checksum test')
             if state:
                 print(f'{file_name} downloaded')
                 new_files = True

@@ -149,8 +149,6 @@ def write_to_db(c, itp_profile):
 
 
 if __name__ == '__main__':
-    # sys.argv.append(r'D:\ITP Data\final\itp65final')
-
     assert len(sys.argv) > 1, 'No input path specified'
     path = Path(sys.argv[1])
     product_arg = 'final'
@@ -163,7 +161,7 @@ if __name__ == '__main__':
     start_time = time.time()
     db_filename = path / ('itp_' + product_arg + '_' + datetime.now().strftime('%Y_%m_%d') + '.db')
     # import pdb; pdb.set_trace()
-    create_empty_db(db_filename, include_bio=False)
+    create_empty_db(db_filename, include_bio=True)
     connection = sqlite3.connect(db_filename)
     cursor = connection.cursor()
 
