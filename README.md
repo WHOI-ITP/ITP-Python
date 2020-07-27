@@ -82,7 +82,9 @@ pressure | a Numpy array (1xN)
 temperature | a Numpy array (1xN) 
 salinity | a Numpy array (1xN) 
 
-#### Methods
+#### Methods  
+The following methods calculate derived values based on the above data.  
+
 **potential_temperature**(*[p_ref=0]*)  
 Calculates potential temperature from in-situ temperature.
 
@@ -98,6 +100,21 @@ Returns the time the profile began as a Python datetime object.
 **posix_time**()  
 Returns the time the profile began in POSIX time, the number of seconds since
 1970-01-01T00:00:00.
+
+**absolute_salinity**()
+
+**conservative_temperature**()
+
+**density**()
+
+**potential_temperature**()  
+Conservative Temperature at which seawater freezes
+
+**freezing_temperature_zero_pressure()**  
+Conservative Temperature at which seawater freezes at the surface.
+
+**heat_capacity**()  
+Calculates the isobaric heat capacity of seawater.
 
 #### Example Usage
 Return all profiles bounded by the parallels 70 and 80 degrees, the meridians -170 and -140 degrees, during the year 2010. Pass in the arguments using the constructor.
@@ -150,7 +167,7 @@ m.plot(longitude, latitude, latlon=True)
 ## Installation
   1. Install ITP-Python using pip:
  `pip install git+https://github.com/WHOI-ITP/ITP-Python`
-  2. Download and unzip the ITP database https://www.dropbox.com/sh/fwivtaevuw6xn1p/AABVonV6lSbH3Ob3qeE4CL3fa?dl=0
+  2. Download and unzip the ITP database https://www.dropbox.com/sh/5u68j8h5eiamk1x/AABZTJd3Hx2y-GAsoBKyZo01a?dl=0
   3. To plot data, install matplotlib `pip install matplotlib`
   4. To plot geographic data on a map, you need to install basemap for matplotlib. If using
   Windows, visit https://www.lfd.uci.edu/~gohlke/pythonlibs/#basemap for a 
