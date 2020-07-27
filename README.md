@@ -113,7 +113,7 @@ Conservative Temperature at which seawater freezes at the surface.
 **heat_capacity**()  
 Calculates the isobaric heat capacity of seawater.
 
-#### Example Usage
+### Example Usage
 Return all profiles bounded by the parallels 70 and 80 degrees, the meridians -170 and -140 degrees, during the year 2010. Pass in the arguments using the constructor.
 ```
 from itp_python.itp_query import ItpQuery
