@@ -35,6 +35,8 @@ class ITPGridCollection:
 
 
 class ITPGridParser(CTDParser):
+    ignore = {'nobs', 'year', 'day'}
+
     def parse_header(self):
         header_search = re.search(r'itp([0-9]+)grd([0-9]+).dat',
                                   self.metadata['source'])
@@ -45,6 +47,7 @@ class ITPGridParser(CTDParser):
         self.metadata['date_time'] = julian_to_iso8601(*year_day)
         self.metadata['longitude'] = float(date_and_pos[LONGITUDE])
         self.metadata['latitude'] = float(date_and_pos[LATITUDE])
+        self.columns = []
 
     def read_data(self):
         for row in self.data[DATA_START:]:
@@ -52,7 +55,7 @@ class ITPGridParser(CTDParser):
             if row[0].startswith('%'):
                 continue  # skip comments, including header
             values = [None if v == 'NaN' else float(v) for v in values]
-            for i, field in enumerate(self.variables):
+            for i, field in enumerate(self.columns):
                 if field in self.variables.keys():
                     self.variables[field].append(values[i])
 
@@ -62,9 +65,12 @@ class ITPGridParser(CTDParser):
                               self.data[VARIABLES_LINE])
         variable_names = re.sub(r'-', '_', variable_names)
         variable_names = variable_names.lower().split()
-        to_remove = set(variable_names).intersection({'nobs', 'year', 'day'})
+        self.columns = list(variable_names)
+
+        to_remove = set(variable_names).intersection(self.ignore)
         for var in to_remove:
             variable_names.remove(var)
+
         self.variables = {v: list() for v in variable_names}
 
     def _init_data_dict(self, sensor_names):
