@@ -107,9 +107,6 @@ Returns the time the profile began in POSIX time, the number of seconds since
 
 **density**()
 
-**potential_temperature**()  
-Conservative Temperature at which seawater freezes
-
 **freezing_temperature_zero_pressure()**  
 Conservative Temperature at which seawater freezes at the surface.
 
