@@ -120,11 +120,11 @@ from itp_python.itp_query import ItpQuery
 from datetime import datetime
 
 path = 'c:/path/to/itp_db.db'
-startTime = datetime(2010, 1, 1)
-endTime = datetime(2010, 12, 31)
+start_time = datetime(2010, 1, 1)
+end_time = datetime(2010, 12, 31)
 
 # Create an ItpQuery object and load arguments through the constructor
-query = ItpQuery(path, latitude=[70, 80], longitude=[-170, -140], date_time=[startTime, endTime])
+query = ItpQuery(path, latitude=[70, 80], longitude=[-170, -140], date_time=[start_time, end_time])
 # Call fetch to retrieve results
 results = query.fetch()
 print('{} results returned'.format(len(results)))
