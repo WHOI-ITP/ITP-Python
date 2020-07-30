@@ -77,7 +77,7 @@ class DateTimeFilter(SqlFilter):
             raise ValueError('End time must be after start time')
 
     def value(self):
-        sql = '(date_time BETWEEN "?" AND "?")'
+        sql = '(date_time BETWEEN ? AND ?)'
         iso_times = [x.strftime('%Y-%m-%dT%H:%M:%S') for x in self.args]
         return sql, iso_times
 
