@@ -64,9 +64,9 @@ class LongitudeFilter(SqlFilter):
                 raise ValueError('Longitude must be in range -180 to 180')
 
     def value(self):
-        sql = '(longitude > ? ? longitude < ?)'
         logical = 'OR' if self.args[1] < self.args[0] else 'AND'
-        return sql, [self.args[0], logical, self.args[1]]
+        sql = f'(longitude > ? {logical} longitude < ?)'
+        return sql, self.args
 
 
 class DateTimeFilter(SqlFilter):
