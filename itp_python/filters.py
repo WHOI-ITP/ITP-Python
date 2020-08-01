@@ -8,6 +8,10 @@ def pre_filter_factory(parameter, values):
         'date_time': DateTimeFilter,
         'extra_variables': ExtraVariableFilter
     }
+    # pressure is the only post filter so we can simply check for it here
+    # so it doesn't throw an unknown filter error
+    if parameter == 'pressure':
+        return None
     if parameter not in parameter_classes.keys():
         raise ValueError('Unknown filter {}'.format(parameter))
     return parameter_classes[parameter](values)
@@ -28,6 +32,9 @@ class SqlFilter:
         raise NotImplementedError
 
     def value(self):
+        # returns a two element tuple. The first value is the sql portion
+        # with ? for variables. The second value is a list of values to
+        # be inserted where the ? occurs in the sql.
         raise NotImplementedError
 
 
@@ -82,6 +89,20 @@ class DateTimeFilter(SqlFilter):
         return sql, iso_times
 
 
+class PressureFilter(SqlFilter):
+    def _check(self):
+        if len(self.args) != 2:
+            raise ValueError('Pressure range must contain exactly two values.')
+        if self.args[0] > self.args[1]:
+            raise ValueError('Top pressure must be less than bottom pressure')
+
+    def value(self):
+        sql = '(pressure >= ? AND pressure <= ?)'
+        pressures = [self.args[0] * 10000.0, self.args[1] * 10000.0]
+        return sql, pressures
+
+
+
 class ExtraVariableFilter(SqlFilter):
     def _check(self):
         pass
@@ -95,6 +116,3 @@ class ExtraVariableFilter(SqlFilter):
         sql += '(' + ','.join('?' * len(self.args)) + '))'
         return sql, self.args
 
-
-class ExtraVariableJoin:
-    pass

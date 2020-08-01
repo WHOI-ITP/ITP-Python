@@ -3,7 +3,7 @@ import numpy as np
 from pathlib import Path
 from datetime import datetime
 import gsw
-from itp_python.filters import pre_filter_factory, ExtraVariableJoin
+from itp_python.filters import pre_filter_factory, PressureFilter
 
 
 class Profile:
@@ -95,9 +95,14 @@ class ItpQuery:
     def fetch(self):
         with sqlite3.connect(str(self.db_path.absolute())) as connection:
             cursor = connection.cursor()
+
+            # make sure any "extra_variables" are valid
             self._check_extra_fields(cursor)
+
+            # build up the profiles
             self._query_metadata(cursor)
             self._query_profiles(cursor)
+            self._remove_empty_profiles()
         return self._profiles
 
     def _check_extra_fields(self, cursor):
@@ -108,7 +113,7 @@ class ItpQuery:
         known_extra_vars = [f[0] for f in known_extra_vars]
         for var in self.args['extra_variables']:
             if var not in known_extra_vars:
-                raise ValueError('Unknown extra_variable {}'.format(var))
+                raise ValueError(f'Unknown extra_variable {format(var)}')
 
     def _query_metadata(self, cursor):
         results = cursor.execute(*self._build_query())
@@ -144,18 +149,25 @@ class ItpQuery:
 
     def _query_profiles(self, cursor):
         for profile in self._profiles:
-            profile_id = profile._id
+            sql_args = [profile._id]
             fields = ['pressure', 'temperature', 'salinity']
-            # for variable in self.args['extra_variables']:
-            #     fields.append(variable)
             format_str = '{0}/10000.0 as {0}'
-            sql = 'SELECT '
-            sql += ', '.join([format_str.format(x) for x in fields])
-            sql += ' FROM ctd'
-            sql += ' WHERE profile_id = {} ORDER BY pressure'.format(
-                profile_id)
-            results = cursor.execute(sql)
+            query = 'SELECT '
+            query += ', '.join([format_str.format(x) for x in fields])
+            query += ' FROM ctd'
+            query += ' WHERE profile_id = ?'
+            if 'pressure' in self.args:
+                sql, args = PressureFilter(self.args['pressure']).value()
+                query += ' AND ' + sql
+                sql_args.extend(args)
+            query += ' ORDER BY pressure'
+            results = cursor.execute(query, sql_args)
+
             values = np.array(results.fetchall(), dtype=np.float)
+            if values.size == 0:
+                # the pressure filter may eliminate all the samples
+                # in that case, remove the profile
+                continue
             for i, field in enumerate(fields):
                 setattr(profile, field, values[:, i])
             if 'extra_variables' in self.args:
@@ -172,3 +184,6 @@ class ItpQuery:
             results = cursor.execute(sql, [var, profile._id])
             values = np.array(results.fetchall(), dtype=np.float)
             setattr(profile, var, values[:, 0])
+
+    def _remove_empty_profiles(self):
+        self._profiles = [p for p in self._profiles if p.pressure is not None]
