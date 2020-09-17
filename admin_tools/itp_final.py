@@ -42,7 +42,8 @@ class ITPFinalParser(CTDParser):
         date_and_pos = self.data[DATE_POS_LINE].split()
         year_day = (int(date_and_pos[YEAR]), float(date_and_pos[DAY]))
         self.metadata['date_time'] = julian_to_iso8601(*year_day)
-        self.metadata['longitude'] = float(date_and_pos[LONGITUDE])
+        lon = float(date_and_pos[LONGITUDE])
+        self.metadata['longitude'] = (lon + 180) % 360 - 180
         self.metadata['latitude'] = float(date_and_pos[LATITUDE])
 
     def read_data(self):

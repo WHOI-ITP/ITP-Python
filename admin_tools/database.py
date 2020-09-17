@@ -7,6 +7,7 @@ from admin_tools.grid import ITPGridCollection
 from admin_tools.itp import REQUIRED_VARIABLES
 from admin_tools.itp_final import ITPFinalCollection
 from admin_tools.raw import RawCollection
+from admin_tools.microcat import ITPMicroCollection
 from admin_tools.wod_csv import WODCollection
 from datetime import datetime
 from pathlib import Path
@@ -16,7 +17,8 @@ PRODUCTS = {
     'final': ITPFinalCollection,
     'cormat': CormatCollection,
     'grid': ITPGridCollection,
-    'raw': RawCollection
+    'raw': RawCollection,
+    'micro': ITPMicroCollection
 }
 
 
@@ -148,6 +150,26 @@ def write_to_db(c, itp_profile):
                           (ctd_id[i][0], sensor_id[0], value))
 
 
+def build_database(path, product, include_bio=True):
+    path = Path(path)
+    collection = PRODUCTS[product]
+    start_time = time.time()
+    db_filename = path / ('itp_' + product + '_' + datetime.now().strftime(
+        '%Y_%m_%d') + '.db')
+    create_empty_db(db_filename, include_bio)
+    connection = sqlite3.connect(db_filename)
+    cursor = connection.cursor()
+    for i, profile in enumerate(collection.glob(path)):
+        write_to_db(cursor, profile)
+        if i % 1000 == 0:
+            print(i)
+            connection.commit()
+    connection.commit()
+    connection.close()
+    etime = time.time()
+    print('Database built in {:0.1f} seconds'.format(etime - start_time))
+
+
 if __name__ == '__main__':
     assert len(sys.argv) > 1, 'No input path specified'
     path = Path(sys.argv[1])
@@ -155,24 +177,7 @@ if __name__ == '__main__':
     if len(sys.argv) > 2:
         product_arg = sys.argv[2]
         assert product_arg in PRODUCTS.keys(), 'Invalid product type'
+    build_database(path, product_arg)
 
-    product = PRODUCTS[product_arg]
 
-    start_time = time.time()
-    db_filename = path / ('itp_' + product_arg + '_' + datetime.now().strftime('%Y_%m_%d') + '.db')
-    # import pdb; pdb.set_trace()
-    create_empty_db(db_filename, include_bio=True)
-    connection = sqlite3.connect(db_filename)
-    cursor = connection.cursor()
-
-    for i, profile in enumerate(product.glob(path)):
-        write_to_db(cursor, profile)
-        if i % 1000 == 0:
-            print(i)
-            connection.commit()
-
-    connection.commit()
-    connection.close()
-    etime = time.time()
-    print('Database built in {:0.1f} seconds'.format(etime - start_time))
 
