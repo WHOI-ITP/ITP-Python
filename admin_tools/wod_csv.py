@@ -2,15 +2,8 @@ from datetime import datetime, timedelta
 from admin_tools.itp import ItpProfile
 from pathlib import Path
 from admin_tools.ctd_parser import CTDParser
-import logging
 from collections.abc import Iterable
 
-
-logging.basicConfig(format='%(asctime)s %(message)s',
-                    datefmt='%Y/%m/%dT%I:%M:%S',
-                    filename='../itp_python/wod_csv.log',
-                    filemode='w',
-                    level=logging.DEBUG)
 
 MISSING_VALUE = '---0---'
 
@@ -48,7 +41,7 @@ class WODCollection(Iterable):
                     except ValueError:
                         return None
                     except TypeError:
-                        logging.exception('Exception caught during parsing')
+                        print('Exception caught during parsing')
 
 
 class WODParser(CTDParser):
@@ -90,8 +83,6 @@ class WODParser(CTDParser):
                 try:
                     value = None if value == MISSING_VALUE else float(value)
                 except ValueError:
-                    logging.exception('Exception while converting {} to '
-                                      'float'.format(value))
                     value = None
                 self.variables[variable].append(value)
 
