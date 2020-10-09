@@ -119,7 +119,7 @@ Calculates the isobaric heat capacity of seawater.
 
 ## An introduction
 To get started, you need to install the ITP-Python package and download the 
-ITP database. Download the itp_final_xxxx.zip database. See the bottom of the page for instructions.
+ITP database. See [Installation](#Installation) for instructions.
 
 It is very easy to search for ITP profiles based on latitude, longitude, time 
 and system number. The following example demonstrates how to find all 
