@@ -102,7 +102,6 @@ class PressureFilter(SqlFilter):
         return sql, pressures
 
 
-
 class ExtraVariableFilter(SqlFilter):
     def _check(self):
         pass

@@ -41,6 +41,7 @@ def test_read_scaled_data(small_data_file):
     data = small_data_file.scaled_data('pressure')
     pass
 
+
 def test_variables(small_data_file):
     assert set(small_data_file.variables()) == \
            set(['pressure', 'temperature', 'salinity'])
