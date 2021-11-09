@@ -1,6 +1,7 @@
 from admin_tools.utils import julian_to_iso8601
 from pathlib import Path
 from admin_tools.ctd_parser import CTDParser
+from admin_tools.profile_direction import get_direction
 import re
 
 
@@ -17,23 +18,35 @@ LATITUDE = 3
 
 
 class ITPFinalCollection:
-    def __init__(self, paths):
+    def __init__(self, paths, direction=None):
         if type(paths) == str:
             paths = [paths]
         self.paths = paths
+        self.direction = direction if direction else {}
 
     @classmethod
     def glob(cls, parent_directory):
         paths = list(Path(parent_directory).glob('**/itp*grd*.dat'))
-        return cls(paths)
+        direction_file = Path(parent_directory) / 'direction.txt'
+        if direction_file.is_file():
+            direction = get_direction(direction_file)
+        else:
+            direction = None
+        return cls(paths, direction)
 
     def __iter__(self):
         for path in self.paths:
             with open(path, 'r') as f:
-                yield ITPFinalParser(f.readlines(), Path(path).name).parse()
+                parser = ITPFinalParser(f.readlines(), Path(path).name)
+                parser.add_direction(self.direction)
+                yield parser.parse()
 
 
 class ITPFinalParser(CTDParser):
+    def __init__(self, data, source):
+        super().__init__(data, source)
+        self.direction = {}
+
     def parse_header(self):
         header_search = re.search(r'%ITP ([0-9]+).*profile ([0-9]+)',
                                   self.data[SYSTEM_CAST_LINE])
@@ -45,6 +58,12 @@ class ITPFinalParser(CTDParser):
         lon = float(date_and_pos[LONGITUDE])
         self.metadata['longitude'] = (lon + 180) % 360 - 180
         self.metadata['latitude'] = float(date_and_pos[LATITUDE])
+        key = (self.metadata['system_number'], self.metadata['profile_number'])
+        if key in self.direction:
+            self.metadata['direction'] = self.direction[key]
+
+    def add_direction(self, direction):
+        self.direction = direction
 
     def read_data(self):
         for row in self.data[DATA_START:]:

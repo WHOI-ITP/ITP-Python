@@ -9,6 +9,9 @@ class ItpProfile:
         assert set(REQUIRED_METADATA).issubset(metadata)
         self._metadata = metadata
         self._variables = variables
+        # direction is not required metadata, so default it to None
+        if 'direction' not in self._metadata:
+            self._metadata['direction'] = None
 
     def metadata(self, field):
         return self._metadata[field]

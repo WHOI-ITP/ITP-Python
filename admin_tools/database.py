@@ -38,7 +38,8 @@ def create_empty_db(path, include_bio=False):
             source TEXT,
             date_time TEXT,
             latitude REAL, 
-            longitude REAL
+            longitude REAL,
+            direction TEXT
         )
         '''
     )
@@ -109,14 +110,18 @@ def create_empty_db(path, include_bio=False):
 
 
 def write_to_db(c, itp_profile):
-    c.execute('INSERT INTO profiles VALUES (?,?,?,?,?,?,?)', (
-        None,
-        itp_profile.metadata('system_number'),
-        itp_profile.metadata('profile_number'),
-        itp_profile.metadata('source'),
-        itp_profile.metadata('date_time'),
-        itp_profile.metadata('latitude'),
-        itp_profile.metadata('longitude'))
+    c.execute(
+        'INSERT INTO profiles VALUES (?,?,?,?,?,?,?,?)',
+        (
+            None,
+            itp_profile.metadata('system_number'),
+            itp_profile.metadata('profile_number'),
+            itp_profile.metadata('source'),
+            itp_profile.metadata('date_time'),
+            itp_profile.metadata('latitude'),
+            itp_profile.metadata('longitude'),
+            itp_profile.metadata('direction')
+        )
     )
     rowid = c.lastrowid
     scaled_values = {v: itp_profile.scaled_data(v) for v in REQUIRED_VARIABLES}
@@ -154,12 +159,12 @@ def build_database(path, product, include_bio=True):
     path = Path(path)
     collection = PRODUCTS[product]
     start_time = time.time()
-    db_filename = path / ('itp_' + product + '_' + datetime.now().strftime(
-        '%Y_%m_%d') + '.db')
-    create_empty_db(db_filename, include_bio)
-    connection = sqlite3.connect(db_filename)
+    time_str = datetime.now().strftime('%Y_%m_%d')
+    db_filename = f'itp_{product}_{time_str}.db'
+    create_empty_db(path / db_filename, include_bio)
+    connection = sqlite3.connect(path / db_filename)
     cursor = connection.cursor()
-    for i, profile in enumerate(collection.glob(path)):
+    for i, profile in enumerate(collection.glob(path / product)):
         write_to_db(cursor, profile)
         if i % 1000 == 0:
             print(i)
@@ -168,16 +173,3 @@ def build_database(path, product, include_bio=True):
     connection.close()
     etime = time.time()
     print('Database built in {:0.1f} seconds'.format(etime - start_time))
-
-
-if __name__ == '__main__':
-    assert len(sys.argv) > 1, 'No input path specified'
-    path = Path(sys.argv[1])
-    product_arg = 'final'
-    if len(sys.argv) > 2:
-        product_arg = sys.argv[2]
-        assert product_arg in PRODUCTS.keys(), 'Invalid product type'
-    build_database(path, product_arg)
-
-
-

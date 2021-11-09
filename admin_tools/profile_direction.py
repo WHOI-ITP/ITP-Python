@@ -12,8 +12,9 @@ def get_direction(path):
         f.readline()
         line = f.readline().strip()
         while line:
-            system, profile, direction = line.split('\t')
+            data = [x.strip() for x in line.split('\t')]
+            system, profile, direction = data
             if direction in ['up', 'down']:
-                profiles[(system, profile)] = direction
+                profiles[(int(system), int(profile))] = direction
             line = f.readline().strip()
     return profiles
