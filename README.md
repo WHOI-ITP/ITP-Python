@@ -129,7 +129,7 @@ Southern, Northern for latitude, and Western, Eastern for longitude.
 
 First import `ItpQuery` from the whoi_itp package. If you plan to search by date, also import Python's `datetime` module
 ```
-from whoi_itp.itp_query import ItpQuery
+from itp.itp_query import ItpQuery
 from datetime import datetime
 ```
 Specify the path to the database file you downloaded. Define the start and end times you wish to search for.
@@ -189,7 +189,7 @@ m.plot(longitude, latitude, latlon=True)
 ```
 import matplotlib.pyplot as plt
 import numpy as np
-from whoi_itp.itp_query import ItpQuery
+from itp.itp_query import ItpQuery
 from geopy.distance import distance
 
 
@@ -242,7 +242,7 @@ The following example shows a scatter plot of the the temperature at 400 meters 
 ```
 import numpy as np
 import matplotlib.pyplot as plt
-from whoi_itp.itp_query import ItpQuery
+from itp.itp_query import ItpQuery
 from datetime import datetime
 from mpl_toolkits.basemap import Basemap
 
