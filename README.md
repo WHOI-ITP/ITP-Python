@@ -127,9 +127,9 @@ profiles from 2010 in the region bounded by 70 and 80 degrees North, and
 170 to 140 degrees West. Note the order that the bounds are specified: 
 Southern, Northern for latitude, and Western, Eastern for longitude.
 
-First import `ItpQuery` from the itp_python package. If you plan to search by date, also import Python's `datetime` module
+First import `ItpQuery` from the whoi_itp package. If you plan to search by date, also import Python's `datetime` module
 ```
-from itp_python.itp_query import ItpQuery
+from whoi_itp.itp_query import ItpQuery
 from datetime import datetime
 ```
 Specify the path to the database file you downloaded. Define the start and end times you wish to search for.
@@ -150,7 +150,7 @@ ItpQuery will query the database and return all the ITP profiles that fit the se
 In this case, 3093 profiles were returned. The returned profiles are `Profile` objects. 
 ```
 >>> type(results[0])
-<class 'itp_python.itp_query.Profile'>
+<class 'whoi_itp.itp_query.Profile'>
 ```
 `Profile` objects contain metadata such as the profile's location and time,  as well as the pressure, temperature, and salinity measurements. In addition, the `Profile` object has a series of methods that calculate derived values such as depth and potential temperature. See the documentation above.
 
@@ -189,7 +189,7 @@ m.plot(longitude, latitude, latlon=True)
 ```
 import matplotlib.pyplot as plt
 import numpy as np
-from itp_python.itp_query import ItpQuery
+from whoi_itp.itp_query import ItpQuery
 from geopy.distance import distance
 
 
@@ -242,7 +242,7 @@ The following example shows a scatter plot of the the temperature at 400 meters 
 ```
 import numpy as np
 import matplotlib.pyplot as plt
-from itp_python.itp_query import ItpQuery
+from whoi_itp.itp_query import ItpQuery
 from datetime import datetime
 from mpl_toolkits.basemap import Basemap
 
