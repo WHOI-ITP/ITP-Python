@@ -1,0 +1,2 @@
+numpy
+gsw@ git+https://github.com/TEOS-10/python-gsw@master

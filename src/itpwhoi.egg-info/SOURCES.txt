@@ -1,0 +1,13 @@
+LICENSE
+README.md
+pyproject.toml
+setup.py
+src/itp/__init__.py
+src/itp/filters.py
+src/itp/itp_query.py
+src/itp/profile.py
+src/itpwhoi.egg-info/PKG-INFO
+src/itpwhoi.egg-info/SOURCES.txt
+src/itpwhoi.egg-info/dependency_links.txt
+src/itpwhoi.egg-info/requires.txt
+src/itpwhoi.egg-info/top_level.txt
