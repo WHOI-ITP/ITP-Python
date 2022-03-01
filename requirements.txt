@@ -1,9 +1,0 @@
-ftputil
-h5py
-numpy
-PyQt5
-pytest
-pytest-cov
-pytest-mock
-# gsw-3.3.1-cp37-cp37m-win32.whl
--e ../ITP-Python
