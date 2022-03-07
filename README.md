@@ -26,14 +26,14 @@ An `ItpQuery` object is used to connect to, and request profiles from, the ITP d
  **\_\_init\_\_**(*db_path[, keyword filters]*)    
 You must supply `db_path` -a path to the ITP database. A variety of keyword arguments are accepted: 
 
-Keyword | Description
-:--- | :---
-latitude | a two element list specifying the Southern and Northern bounding parallels. Acceptable range is [-90 to 90]
-longitude | a two element list specifying the Western and Eastern bounding meridians. Acceptable meridian range is [-180 to 180].
-date_time | a two element list specifying the start and end time bounds. Times must be specified in Python `datetime`.
-system | a list of ITP system numbers to filter for.
-pressure | a two element list specifying the range of pressures to return. Note that pressure range only specifies pressure bounds. It does not ensure that a profile will have pressure values up to the bounds.
-extra_variables | a list of "extra variables" that must be present in the profiles. If multiple variables are provided, the result will be an OR query (i.e. the results will have at least one of the variables, but not necessarily all). Supported values are: dissolved_oxygen, nacm, vert, east, north, par, turbidity, cdom, chlorophyll_a.
+| Keyword         | Description                                                                                                                                                                                                                                                                                                                     |
+|:----------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| latitude        | a two element list specifying the Southern and Northern bounding parallels. Acceptable range is [-90 to 90]                                                                                                                                                                                                                     |
+| longitude       | a two element list specifying the Western and Eastern bounding meridians. Acceptable meridian range is [-180 to 180].                                                                                                                                                                                                           |
+| date_time       | a two element list specifying the start and end time bounds. Times must be specified in Python `datetime`.                                                                                                                                                                                                                      |
+| system          | a list of ITP system numbers to filter for.                                                                                                                                                                                                                                                                                     |
+| pressure        | a two element list specifying the range of pressures to return. Note that pressure range only specifies pressure bounds. It does not ensure that a profile will have pressure values up to the bounds.                                                                                                                          |
+| extra_variables | a list of "extra variables" that must be present in the profiles. If multiple variables are provided, the result will be an OR query (i.e. the results will have at least one of the variables, but not necessarily all). Supported values are: dissolved_oxygen, nacm, vert, east, north, par, turbidity, cdom, chlorophyll_a. |
 
 Example:
 ```
