@@ -1,3 +1,5 @@
+![Tests](https://github.com/WHOI-ITP/ITP-Python/actions/workflows/tests.yml/badge.svg)
+
 # ITP-Python
 The Ice Tethered Profiler is an autonomous instrument that vertically profiles the water column under sea ice. The ITP collects measurements of conductivity, temperature, and depth. Data are automatically transmitted back via satellite.  [Learn More](http://www.whoi.edu/itp "Learn More")
 
@@ -285,3 +287,4 @@ colorbar.ax.set_ylabel('Temperature (C)')
   4. To plot geographic data on a map, you need to install basemap for matplotlib. If using
   Windows, visit https://www.lfd.uci.edu/~gohlke/pythonlibs/#basemap for a 
   precompiled binary. Download, then install using pip.
+  
