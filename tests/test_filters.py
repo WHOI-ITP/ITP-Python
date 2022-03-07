@@ -26,7 +26,7 @@ def test_factory(name, klass):
 
 
 def test_factory_pressure():
-    assert pre_filter_factory('pressure', [1,2,3]) is None
+    assert pre_filter_factory('pressure', [1, 2, 3]) is None
 
 
 def test_factory_unknown_type():
@@ -128,6 +128,3 @@ def test_date_time_filter():
     assert sql == '(date_time BETWEEN ? AND ?)'
     iso_times = [x.strftime('%Y-%m-%dT%H:%M:%S') for x in args]
     assert return_args == iso_times
-
-
-

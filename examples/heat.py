@@ -39,7 +39,7 @@ def calc_heat(profiles, bounds, method='depth'):
 
 
 def remove_none_vals(profile):
-    not_none = np.where((profile.temperature != None) & (profile.salinity != None))[0]
+    not_none = np.where((profile.temperature is not None) & (profile.salinity is not None))[0]
     profile.salinity = profile.salinity[not_none]
     profile.temperature = profile.temperature[not_none]
     profile.pressure = profile.pressure[not_none]
