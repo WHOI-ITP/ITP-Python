@@ -2,6 +2,7 @@ import sqlite3
 import numpy as np
 from pathlib import Path
 from itp.filters import pre_filter_factory, PressureFilter
+from itp.profile import Profile
 
 
 class ItpQuery:
