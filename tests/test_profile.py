@@ -1,7 +1,5 @@
 import pytest
-
 from itp.profile import Profile
-import gsw
 from datetime import datetime
 
 
