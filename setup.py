@@ -29,6 +29,6 @@ setuptools.setup(
     ],
     extras_require={
         'testing':
-        ['flake8', 'tox', 'pytest', 'pytest-cov', 'mypy']
+        ['flake8', 'pytest', 'pytest-cov']
     }
 )
