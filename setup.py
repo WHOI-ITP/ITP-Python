@@ -26,5 +26,9 @@ setuptools.setup(
     install_requires=[
         'numpy',
         'gsw@git+https://github.com/TEOS-10/python-gsw@master'
-    ]
+    ],
+    extras_require={
+        'testing':
+        ['flake8', 'tox', 'pytest', 'pytest-cov', 'mypy']
+    }
 )

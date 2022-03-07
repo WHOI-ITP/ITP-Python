@@ -27,7 +27,6 @@ class SqlFilter:
         if type(self.args) != list:
             raise ValueError('All arguments must be a list.')
 
-
     def _check(self):
         raise NotImplementedError
 
@@ -102,7 +101,6 @@ class PressureFilter(SqlFilter):
         return sql, pressures
 
 
-
 class ExtraVariableFilter(SqlFilter):
     def _check(self):
         pass
@@ -115,4 +113,3 @@ class ExtraVariableFilter(SqlFilter):
         sql += 'WHERE variable_names.name IN '
         sql += '(' + ','.join('?' * len(self.args)) + '))'
         return sql, self.args
-
