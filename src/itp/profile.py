@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 import gsw
 
 
@@ -19,7 +19,8 @@ class Profile:
         return datetime.strptime(self.date_time, '%Y-%m-%dT%H:%M:%S')
 
     def posix_time(self):
-        return self.python_datetime().timestamp()
+        dt = self.python_datetime()
+        return dt.replace(tzinfo=timezone.utc).timestamp()
 
     def depth(self):
         return -self.height()
@@ -43,7 +44,7 @@ class Profile:
         )
 
     def density(self):
-        return gsw.density.rho(
+        return gsw.rho(
             self.absolute_salinity(),
             self.conservative_temperature(),
             self.pressure
