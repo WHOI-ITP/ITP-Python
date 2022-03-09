@@ -1,4 +1,6 @@
 ![Tests](https://github.com/WHOI-ITP/ITP-Python/actions/workflows/tests.yml/badge.svg)
+![Tests](https://img.shields.io/badge/Coverage-100.0%25-brightgreen)
+
 
 # ITP-Python
 The Ice Tethered Profiler is an autonomous instrument that vertically profiles the water column under sea ice. The ITP collects measurements of conductivity, temperature, and depth. Data are automatically transmitted back via satellite.  [Learn More](http://www.whoi.edu/itp "Learn More")
