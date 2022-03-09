@@ -171,7 +171,7 @@ ax.invert_yaxis()
 ax.set_xlabel('Salinity')
 ax.set_ylabel('Pressure (dbar)')
 ```
-<img src='https://github.com/WHOI-ITP/ITP-Python/raw/master/resources/salinity_vs_pressure.PNG' width='400'/>
+<img src='resources/salinity_vs_pressure.PNG' width='400'/>
 
 ### Plot a drift track for ITP1
 ```
@@ -187,7 +187,7 @@ m.drawparallels(range(70, 90, 5))
 m.drawmeridians(range(-180,180,20), latmax=85)
 m.plot(longitude, latitude, latlon=True)
 ```
-<img src='https://github.com/WHOI-ITP/ITP-Python/raw/master/resources/drift_track.PNG' width='400px'/>
+<img src='resources/drift_track.PNG' width='400px'/>
 
 ### Create a temperature section of the ITP1 drift track
 ```
@@ -237,7 +237,7 @@ colorbar.ax.set_ylabel('Potential Temperature (C)')
 ax.set_xlabel('Drift Distance (km)')
 ax.set_ylabel('Depth (m)')
 ```
-<img src='https://github.com/WHOI-ITP/ITP-Python/raw/master/resources/itp1_section.PNG' width='600px'/>
+<img src='resources/itp1_section.PNG' width='600px'/>
 
 ### Show a map with temperature at 400m
 The following example shows a scatter plot of the the temperature at 400 meters from all ITPs in the region bounded by 70 and 80 degrees North, and 
@@ -279,14 +279,12 @@ scatter = m.scatter(
 colorbar = plt.colorbar(scatter)
 colorbar.ax.set_ylabel('Temperature (C)')
 ```
-<img src='https://github.com/WHOI-ITP/ITP-Python/raw/master/resources/scatter_400.PNG' width='500px'/>
+<img src='resources/scatter_400.PNG' width='500px'/>
 
 ## Installation
   1. Install ITP-Python using pip:
  `pip install git+https://github.com/WHOI-ITP/ITP-Python`
   2. Download and unzip the ITP **final** database https://www.dropbox.com/sh/5u68j8h5eiamk1x/AABZTJd3Hx2y-GAsoBKyZo01a?dl=0
   3. To plot data, install matplotlib `pip install matplotlib`
-  4. To plot geographic data on a map, you need to install basemap for matplotlib. If using
-  Windows, visit https://www.lfd.uci.edu/~gohlke/pythonlibs/#basemap for a 
-  precompiled binary. Download, then install using pip.
+  4. To plot geographic data on a map, install basemap `pip install basemap`
   
