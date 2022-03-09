@@ -5,7 +5,7 @@ from datetime import datetime
 from mpl_toolkits.basemap import Basemap
 
 
-PATH = r'J:\ITP Data\itp_final_2021_11_09.db'
+PATH = 'J:/ITP Data/itp_final_2021_11_09.db'
 TIME_RANGE = [datetime(2006, 1, 1), datetime(2007, 12, 31)]
 
 query = ItpQuery(
@@ -32,3 +32,4 @@ scatter = m.scatter(
     longitude, latitude, c=temp_400, latlon=True, vmin=0.3, vmax=1.0)
 colorbar = plt.colorbar(scatter)
 colorbar.ax.set_ylabel('Temperature (C)')
+plt.show()

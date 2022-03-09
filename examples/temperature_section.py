@@ -4,7 +4,7 @@ from itp.itp_query import ItpQuery
 from geopy.distance import distance
 
 
-PATH = r'D:\ITP Data\itp_final_2020_09_14.db'
+PATH = 'J:/ITP Data/itp_final_2021_11_09.db'
 DEPTH_GRID = np.arange(0, 301)
 
 # Create an ItpQuery object
@@ -43,3 +43,4 @@ colorbar = fig.colorbar(contour)
 colorbar.ax.set_ylabel('Potential Temperature (C)')
 ax.set_xlabel('Drift Distance (km)')
 ax.set_ylabel('Depth (m)')
+plt.show()
