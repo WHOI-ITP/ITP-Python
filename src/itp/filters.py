@@ -8,7 +8,7 @@ def pre_filter_factory(parameter, values):
         'date_time': DateTimeFilter,
         'extra_variables': ExtraVariableFilter
     }
-    # pressure is the only post filter so we can simply check for it here
+    # pressure is the only post filter, so we can simply check for it here
     # so it doesn't throw an unknown filter error
     if parameter == 'pressure':
         return None

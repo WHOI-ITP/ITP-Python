@@ -16,6 +16,8 @@ class ItpQuery:
         self._max_results = results
 
     def set_filter_dict(self, filter_dict):
+        if type(filter_dict) is not dict:
+            raise TypeError('filter_dict must be a dictionary')
         self.args = filter_dict
 
     def add_filter(self, param, value):
@@ -26,7 +28,7 @@ class ItpQuery:
             cursor = connection.cursor()
 
             # make sure any "extra_variables" are valid
-            self._check_extra_fields(cursor)
+            self._validate_extra_fields(cursor)
 
             # build up the profiles
             self._query_metadata(cursor)
@@ -34,9 +36,11 @@ class ItpQuery:
             self._remove_empty_profiles()
         return self._profiles
 
-    def _check_extra_fields(self, cursor):
+    def _validate_extra_fields(self, cursor):
         if 'extra_variables' not in self.args:
             return
+        if type(self.args['extra_variables']) is not list:
+            raise ValueError('extra_variables must by a list')
         sql = 'SELECT name FROM variable_names'
         known_extra_vars = cursor.execute(sql).fetchall()
         known_extra_vars = [f[0] for f in known_extra_vars]
@@ -73,6 +77,8 @@ class ItpQuery:
                 sql_args.extend(these_args)
         if query.endswith(' AND'):
             query = query[:-4]
+        if query.endswith(' WHERE'):
+            query = query[:-6]
         query += ' ORDER BY system_number, profile_number'
         return query, sql_args
 
