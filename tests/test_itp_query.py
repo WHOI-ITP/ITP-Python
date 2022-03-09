@@ -4,7 +4,7 @@ from itp.itp_query import ItpQuery
 
 
 """
-These are functional tests on actual data. Verification data have 
+These are functional tests on actual data. Verification data have
 been manually extracted from source "itp final" files.
 """
 
